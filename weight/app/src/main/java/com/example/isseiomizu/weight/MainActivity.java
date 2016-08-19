@@ -3,6 +3,7 @@ package com.example.isseiomizu.weight;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 
+import com.google.api.client.util.Value;
 import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.GoogleApiAvailability;
 import com.google.api.client.extensions.android.http.AndroidHttp;
@@ -81,7 +82,7 @@ public class MainActivity extends AppCompatActivity
 
     private static final String BUTTON_TEXT = "Call Google Sheets API";
     private static final String PREF_ACCOUNT_NAME = "accountName";
-    private static final String[] SCOPES = { SheetsScopes.SPREADSHEETS_READONLY };
+    private static final String[] SCOPES = {SheetsScopes.DRIVE, SheetsScopes.SPREADSHEETS};
 
 
     private final int HALF_DAY = 12 * 3600 * 1000;
@@ -178,7 +179,7 @@ public class MainActivity extends AppCompatActivity
      * picker dialog will be shown to the user. Note that the setting the
      * account to use with the credentials object requires the app to have the
      * GET_ACCOUNTS permission, which is requested here if it is not already
-     * present. The AfterPermissionGranted annotation indicates that this
+     * present. The AfterPermissionGrgetAuthTokenanted annotation indicates that this
      * function will be rerun automatically whenever the GET_ACCOUNTS permission
      * is granted.
      */
@@ -394,15 +395,37 @@ public class MainActivity extends AppCompatActivity
 //            String range = "Class Data!A2:E";
             String spreadsheetId = "1CYOcWrQG7VG9wwPmf2VqI2Xqf-YclI04LiUB8Do_v0Q";
             String range = "数値!A2:C";
-            List<String> results = new ArrayList<String>();
+            List<String> results = new ArrayList<>();
             ValueRange response = this.mService.spreadsheets().values()
                     .get(spreadsheetId, range)
                     .execute();
 
-            // 書き込みテスト！
-//            this.mService.spreadsheets().values().
-
             List<List<Object>> values = response.getValues();
+
+
+            // 書き込みテスト！
+            String rangeWrite = "Sheet3!A2:B2";
+            ValueRange content = new ValueRange();
+            content.setRange(rangeWrite);
+//            content.setMajorDimension("ROWS");
+
+            List listWrite = new ArrayList<>();
+            List listValue = Arrays.asList("55.5", "7.7");
+
+
+//            listValue.add(55.5);
+//            listValue.add(7.5);
+
+            listWrite.add(listValue);
+
+
+            content.setValues(listWrite);
+
+//            content.set("55.5", "7.7");
+            UpdateValuesResponse ret = this.mService.spreadsheets().values().update(spreadsheetId, rangeWrite, content)
+                    .setValueInputOption("USER_ENTERED")
+                    .execute();
+
 //            if (values != null) {
 //                results.add("Name, Major");
 //                for (List row : values) {
@@ -416,6 +439,7 @@ public class MainActivity extends AppCompatActivity
 //
 //            return results;
             return values;
+//            return null;
         }
 
 
