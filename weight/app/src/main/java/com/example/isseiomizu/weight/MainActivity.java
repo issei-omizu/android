@@ -2,6 +2,8 @@ package com.example.isseiomizu.weight;
 
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.app.DatePickerDialog;
+
 
 import com.google.api.client.util.Value;
 import com.google.android.gms.common.ConnectionResult;
@@ -38,6 +40,7 @@ import android.text.method.ScrollingMovementMethod;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
+import android.widget.DatePicker;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -47,10 +50,14 @@ import android.graphics.Paint;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.List;
 import java.util.Date;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
+import java.util.Map;
+import java.util.HashMap;
+import java.util.Set;
 
 import pub.devrel.easypermissions.AfterPermissionGranted;
 import pub.devrel.easypermissions.EasyPermissions;
@@ -90,6 +97,7 @@ public class MainActivity extends AppCompatActivity
     private LinearLayout chartlayout;
     private LinearLayout activityLayout;
 
+    private Map<String, List> mapWeight = new HashMap<>();
 
 
     @Override
@@ -97,6 +105,15 @@ public class MainActivity extends AppCompatActivity
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
+        final DatePicker datePicker = (DatePicker) findViewById(R.id.datePicker);
+        datePicker.init(2015, 12, 14, new DatePicker.OnDateChangedListener() {
+            @Override
+            public void onDateChanged(DatePicker view, int year, int monthOfYear, int dayOfMonth) {
+                // 日付を選択した時に実行される
+                String date = year + "年" + (monthOfYear + 1) + "月" + dayOfMonth + "日";
+                List test = mapWeight.get(date);
+            }
+        });
 
         chartlayout = (LinearLayout) findViewById(R.id.chart);
 //        GraphicalView graphicalView = TimeChartView();
@@ -402,6 +419,14 @@ public class MainActivity extends AppCompatActivity
 
             List<List<Object>> values = response.getValues();
 
+            // 取得したデータをMapに展開
+            if (values != null) {
+                results.add("Name, Major");
+                for (List row : values) {
+                    mapWeight.put(row.get(0).toString(), row);
+                }
+            }
+
 
             // 書き込みテスト！
             String rangeWrite = "Sheet3!A2:B2";
@@ -426,17 +451,6 @@ public class MainActivity extends AppCompatActivity
                     .setValueInputOption("USER_ENTERED")
                     .execute();
 
-//            if (values != null) {
-//                results.add("Name, Major");
-//                for (List row : values) {
-//                    if (row.size() > 1) {
-//                        results.add(row.get(0) + ", " + row.get(1));
-//                    }
-//                }
-//            }
-//
-//
-//
 //            return results;
             return values;
 //            return null;
