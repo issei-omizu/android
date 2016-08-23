@@ -3,7 +3,7 @@ package com.example.isseiomizu.weight;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.app.DatePickerDialog;
-
+import android.view.View.OnFocusChangeListener;
 
 import com.google.api.client.util.Value;
 import com.google.android.gms.common.ConnectionResult;
@@ -41,6 +41,7 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.DatePicker;
+import android.widget.EditText;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -97,7 +98,16 @@ public class MainActivity extends AppCompatActivity
     private LinearLayout chartlayout;
     private LinearLayout activityLayout;
 
-    private Map<String, List> mapWeight = new HashMap<>();
+    private TextView mTextView;
+    private EditText editWeight;
+    private EditText editBodyFatPercentage;
+
+    private int mApiMode = 1;
+    private List mListWrite = new ArrayList<>();
+    private String mRangeWrite = "Sheet3!A2:B2";
+    private String mDate = "";
+
+    private Map<String, List<String>> mapWeight = new HashMap<>();
 
 
     @Override
@@ -105,13 +115,50 @@ public class MainActivity extends AppCompatActivity
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
+        this.mTextView = (TextView) findViewById(R.id.textView);
+        this.editWeight = (EditText) findViewById(R.id.editWeight);
+        this.editBodyFatPercentage = (EditText) findViewById(R.id.editBodyFatPercentage);
+
+        this.editWeight.setOnFocusChangeListener(new OnFocusChangeListener() {
+            @Override
+            public void onFocusChange(View v, boolean hasFocus) {
+                if(!hasFocus) {
+                    setWriteDate();
+                    putResultsFromApi();
+                }
+            }
+        });
+
+        this.editBodyFatPercentage.setOnFocusChangeListener(new OnFocusChangeListener() {
+            @Override
+            public void onFocusChange(View v, boolean hasFocus) {
+                if(!hasFocus) {
+                    setWriteDate();
+                    putResultsFromApi();
+                }
+            }
+        });
+
         final DatePicker datePicker = (DatePicker) findViewById(R.id.datePicker);
         datePicker.init(2015, 12, 14, new DatePicker.OnDateChangedListener() {
             @Override
             public void onDateChanged(DatePicker view, int year, int monthOfYear, int dayOfMonth) {
                 // 日付を選択した時に実行される
-                String date = (monthOfYear + 1) + "/" + dayOfMonth + "/" + year;
-                List test = mapWeight.get(date);
+                mDate = (monthOfYear + 1) + "/" + dayOfMonth + "/" + year;
+
+                List test = mapWeight.get(mDate);
+
+                mRangeWrite = String.format("Sheet3!A%s:B%s", test.get(0), test.get(0));
+
+                mTextView.setText(mDate + "::" + mRangeWrite);
+
+                if (test.size() > 1) {
+                    editWeight.setText(test.get(1).toString());
+                    editBodyFatPercentage.setText(test.get(2).toString());
+                } else {
+                    editWeight.setText("0");
+                    editBodyFatPercentage.setText("0");
+                }
             }
         });
 
@@ -170,6 +217,29 @@ public class MainActivity extends AppCompatActivity
         getResultsFromApi();
 
     }
+
+    private void setWriteDate() {
+        mApiMode = 2;
+        mListWrite = new ArrayList<>();
+        List listValue = Arrays.asList(editWeight.getText().toString(), editBodyFatPercentage.getText().toString());
+        mListWrite.add(listValue);
+
+//        int index = mapWeight
+//        mRangeWrite = "";
+    }
+
+    private void putResultsFromApi() {
+        if (! isGooglePlayServicesAvailable()) {
+            acquireGooglePlayServices();
+        } else if (mCredential.getSelectedAccountName() == null) {
+            chooseAccount();
+        } else if (! isDeviceOnline()) {
+            mOutputText.setText("No network connection available.");
+        } else {
+            new MakeRequestTask(mCredential).execute();
+        }
+    }
+
 
     /**
      * Attempt to call the API, after verifying that all the preconditions are
@@ -393,12 +463,36 @@ public class MainActivity extends AppCompatActivity
         @Override
         protected List<List<Object>> doInBackground(Void... params) {
             try {
-                return getDataFromApi();
+                List<List<Object>> val = new ArrayList<>();
+                switch (mApiMode) {
+                    case 1:
+                        val = getDataFromApi();
+                        break;
+                    case 2:
+                        val = putDataFromApi();
+                        break;
+                }
+                return val;
             } catch (Exception e) {
                 mLastError = e;
                 cancel(true);
                 return null;
             }
+        }
+
+        private List<List<Object>> putDataFromApi() throws IOException {
+            String spreadsheetId = "1CYOcWrQG7VG9wwPmf2VqI2Xqf-YclI04LiUB8Do_v0Q";
+
+            // 書き込みテスト！
+            ValueRange content = new ValueRange();
+            content.setRange(mRangeWrite);
+            content.setValues(mListWrite);
+
+            UpdateValuesResponse ret = this.mService.spreadsheets().values().update(spreadsheetId, mRangeWrite, content)
+                    .setValueInputOption("USER_ENTERED")
+                    .execute();
+
+            return getDataFromApi();
         }
 
         /**
@@ -411,8 +505,8 @@ public class MainActivity extends AppCompatActivity
 //            String spreadsheetId = "1BxiMVs0XRA5nFMdKvBdBZjgmUUqptlbs74OgvE2upms";
 //            String range = "Class Data!A2:E";
             String spreadsheetId = "1CYOcWrQG7VG9wwPmf2VqI2Xqf-YclI04LiUB8Do_v0Q";
-            String range = "数値!A2:C";
-            List<String> results = new ArrayList<>();
+            int rangeStart = 2;
+            String range = "数値!A" + rangeStart + ":C";
             ValueRange response = this.mService.spreadsheets().values()
                     .get(spreadsheetId, range)
                     .execute();
@@ -420,36 +514,44 @@ public class MainActivity extends AppCompatActivity
             List<List<Object>> values = response.getValues();
 
             // 取得したデータをMapに展開
+            List<String> listData;
+            Integer count = rangeStart;
             if (values != null) {
-                results.add("Name, Major");
                 for (List row : values) {
-                    mapWeight.put(row.get(0).toString(), row);
+                    listData = new ArrayList<>();
+                    listData.add(count.toString());
+                    if (row.size() > 1) {
+                        listData.add(row.get(1).toString());
+                        listData.add(row.get(2).toString());
+                    }
+                    mapWeight.put(row.get(0).toString(), listData);
+                    count++;
                 }
             }
 
 
-            // 書き込みテスト！
-            String rangeWrite = "Sheet3!A2:B2";
-            ValueRange content = new ValueRange();
-            content.setRange(rangeWrite);
-//            content.setMajorDimension("ROWS");
-
-            List listWrite = new ArrayList<>();
-            List listValue = Arrays.asList("55.5", "7.7");
-
-
-//            listValue.add(55.5);
-//            listValue.add(7.5);
-
-            listWrite.add(listValue);
-
-
-            content.setValues(listWrite);
-
-//            content.set("55.5", "7.7");
-            UpdateValuesResponse ret = this.mService.spreadsheets().values().update(spreadsheetId, rangeWrite, content)
-                    .setValueInputOption("USER_ENTERED")
-                    .execute();
+//            // 書き込みテスト！
+//            String rangeWrite = "Sheet3!A2:B2";
+//            ValueRange content = new ValueRange();
+//            content.setRange(rangeWrite);
+////            content.setMajorDimension("ROWS");
+//
+//            List listWrite = new ArrayList<>();
+//            List listValue = Arrays.asList("55.5", "7.7");
+//
+//
+////            listValue.add(55.5);
+////            listValue.add(7.5);
+//
+//            listWrite.add(listValue);
+//
+//
+//            content.setValues(listWrite);
+//
+////            content.set("55.5", "7.7");
+//            UpdateValuesResponse ret = this.mService.spreadsheets().values().update(spreadsheetId, rangeWrite, content)
+//                    .setValueInputOption("USER_ENTERED")
+//                    .execute();
 
 //            return results;
             return values;
