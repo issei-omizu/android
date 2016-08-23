@@ -4,6 +4,7 @@ import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.app.DatePickerDialog;
 import android.view.View.OnFocusChangeListener;
+import android.content.res.Configuration;
 
 import com.google.api.client.util.Value;
 import com.google.android.gms.common.ConnectionResult;
@@ -43,6 +44,7 @@ import android.widget.Button;
 import android.widget.DatePicker;
 import android.widget.EditText;
 import android.widget.LinearLayout;
+import android.widget.RelativeLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 import android.graphics.Color;
@@ -95,6 +97,10 @@ public class MainActivity extends AppCompatActivity
 
     private final int HALF_DAY = 12 * 3600 * 1000;
 
+    private RelativeLayout mRlChart;
+    private RelativeLayout mRlWeight;
+
+
     private LinearLayout chartlayout;
     private LinearLayout activityLayout;
 
@@ -114,6 +120,13 @@ public class MainActivity extends AppCompatActivity
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+
+        this.mRlChart = (RelativeLayout) findViewById(R.id.rlChart);
+        this.mRlWeight = (RelativeLayout) findViewById(R.id.rlWeight);
+
+        this.mRlChart.setVisibility(View.INVISIBLE);
+        this.mRlWeight.setVisibility(View.VISIBLE);
+
 
         this.mTextView = (TextView) findViewById(R.id.textView);
         this.editWeight = (EditText) findViewById(R.id.editWeight);
@@ -216,6 +229,24 @@ public class MainActivity extends AppCompatActivity
 
         getResultsFromApi();
 
+    }
+
+    @Override
+    public void onConfigurationChanged(Configuration config) {
+        super.onConfigurationChanged(config);
+        String orientation = config.orientation == Configuration.ORIENTATION_LANDSCAPE
+                ? "横" : "縦";
+
+        if (config.orientation == Configuration.ORIENTATION_LANDSCAPE) {
+            this.mRlChart.setVisibility(View.VISIBLE);
+            this.mRlWeight.setVisibility(View.INVISIBLE);
+        } else {
+            this.mRlChart.setVisibility(View.INVISIBLE);
+            this.mRlWeight.setVisibility(View.VISIBLE);
+        }
+
+        Toast.makeText(this, "Screenが" + orientation + "になりました",
+                Toast.LENGTH_LONG ).show();
     }
 
     private void setWriteDate() {
