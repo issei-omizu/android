@@ -532,8 +532,77 @@ public class MainActivity extends AppCompatActivity
 
             List<Request> requests = new ArrayList<>();
 
+            // 列削除
             requests.add(new Request()
                     .setDeleteDimension(deleteDimensionRequest));
+
+            // 列追加
+            requests.add(new Request()
+                    .setAppendDimension(new AppendDimensionRequest().setSheetId(worksheetId).setDimension("COLUMNS").setLength(3)));
+
+            // 体重データ全登録
+            List<CellData> values;
+//            values.add(new CellData()
+//                    .setUserEnteredValue(new ExtendedValue()
+//                            .setNumberValue(Double.valueOf(1)))
+//                    .setUserEnteredFormat(new CellFormat()
+//                            .setBackgroundColor(new com.google.api.services.sheets.v4.model.Color()
+//                                    .setRed(Float.valueOf(1)))));
+//            values.add(new CellData()
+//                    .setUserEnteredValue(new ExtendedValue()
+//                            .setNumberValue(Double.valueOf(2)))
+//                    .setUserEnteredFormat(new CellFormat()
+//                            .setBackgroundColor(new com.google.api.services.sheets.v4.model.Color()
+//                                    .setBlue(Float.valueOf(1)))));
+//            values.add(new CellData()
+//                    .setUserEnteredValue(new ExtendedValue()
+//                            .setNumberValue(Double.valueOf(3)))
+//                    .setUserEnteredFormat(new CellFormat()
+//                            .setBackgroundColor(new com.google.api.services.sheets.v4.model.Color()
+//                                    .setGreen(Float.valueOf(1)))));
+
+            Integer count = 1;
+
+            for(Map.Entry<String, List<String>> e : mapWeight.entrySet()) {
+//                System.out.println(e.getKey() + " : " + e.getValue());
+                values = new ArrayList<>();
+
+                values.add(new CellData()
+                        .setUserEnteredValue(new ExtendedValue()
+                                .setStringValue(e.getKey())));
+//                                .setNumberValue(Double.valueOf(1))));
+//                    .setUserEnteredFormat(new CellFormat()
+//                            .setNumberFormat(new NumberFormat()
+//                                    .setType("DATE"))));
+//                                    .setType("DATE")
+//                                    .setPattern("yyyy-mm-dd"))));
+
+                if (e.getValue().size() > 1) {
+                    values.add(new CellData()
+                            .setUserEnteredValue(new ExtendedValue()
+                                    .setNumberValue(Double.valueOf(e.getValue().get(1)))));
+                    values.add(new CellData()
+                            .setUserEnteredValue(new ExtendedValue()
+                                    .setNumberValue(Double.valueOf(e.getValue().get(2)))));
+                }
+
+                requests.add(new Request()
+                        .setUpdateCells(new UpdateCellsRequest()
+                                .setStart(new GridCoordinate()
+                                        .setSheetId(worksheetId)
+                                        .setRowIndex(count)
+                                        .setColumnIndex(0))
+                                .setRows(Arrays.asList(
+                                        new RowData().setValues(values)))
+                                .setFields("userEnteredValue,userEnteredFormat.backgroundColor")));
+
+                count++;
+            }
+
+//            UpdateCellsRequest updateWeightData = new UpdateCellsRequest();
+//            updateWeightData.setRows(new RowData().setValues(new CellData().set))
+//            requests.add(new Request()
+//                    .setUpdateCells()
 
 
             del.setRequests(requests);
@@ -541,14 +610,14 @@ public class MainActivity extends AppCompatActivity
 
 
 
-            // 書き込みテスト！
-            ValueRange content = new ValueRange();
-            content.setRange(mRangeWrite);
-            content.setValues(mListWrite);
-
-            UpdateValuesResponse ret = this.mService.spreadsheets().values().update(spreadsheetId, mRangeWrite, content)
-                    .setValueInputOption("USER_ENTERED")
-                    .execute();
+//            // 書き込みテスト！
+//            ValueRange content = new ValueRange();
+//            content.setRange(mRangeWrite);
+//            content.setValues(mListWrite);
+//
+//            UpdateValuesResponse ret = this.mService.spreadsheets().values().update(spreadsheetId, mRangeWrite, content)
+//                    .setValueInputOption("USER_ENTERED")
+//                    .execute();
 
             return getDataFromApi();
         }
