@@ -161,16 +161,18 @@ public class MainActivity extends AppCompatActivity
 
                 List test = mapWeight.get(mDate);
 
-                mRangeWrite = String.format("Sheet3!A%s:B%s", test.get(0), test.get(0));
+                editWeight.setText("0");
+                editBodyFatPercentage.setText("0");
 
-                mTextView.setText(mDate + "::" + mRangeWrite);
+                if (test != null) {
+                    mRangeWrite = String.format("Sheet3!A%s:B%s", test.get(0), test.get(0));
 
-                if (test.size() > 1) {
-                    editWeight.setText(test.get(1).toString());
-                    editBodyFatPercentage.setText(test.get(2).toString());
-                } else {
-                    editWeight.setText("0");
-                    editBodyFatPercentage.setText("0");
+                    mTextView.setText(mDate + "::" + mRangeWrite);
+
+                    if (test.size() > 1) {
+                        editWeight.setText(test.get(1).toString());
+                        editBodyFatPercentage.setText(test.get(2).toString());
+                    }
                 }
             }
         });
