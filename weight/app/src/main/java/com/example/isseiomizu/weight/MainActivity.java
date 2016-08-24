@@ -515,6 +515,31 @@ public class MainActivity extends AppCompatActivity
 
         private List<List<Object>> putDataFromApi() throws IOException {
             String spreadsheetId = "1CYOcWrQG7VG9wwPmf2VqI2Xqf-YclI04LiUB8Do_v0Q";
+            Integer worksheetId = 1144545091;
+
+            // 列削除テスト！
+            BatchUpdateSpreadsheetRequest del = new BatchUpdateSpreadsheetRequest();
+            DeleteDimensionRequest deleteDimensionRequest = new DeleteDimensionRequest();
+
+            DimensionRange dimensionRange = new DimensionRange();
+            dimensionRange.setSheetId(worksheetId);
+            dimensionRange.setDimension("COLUMNS");
+            dimensionRange.setStartIndex(1);
+            dimensionRange.setEndIndex(3);
+
+            deleteDimensionRequest.setRange(dimensionRange);
+
+
+            List<Request> requests = new ArrayList<>();
+
+            requests.add(new Request()
+                    .setDeleteDimension(deleteDimensionRequest));
+
+
+            del.setRequests(requests);
+            BatchUpdateSpreadsheetResponse retDel = this.mService.spreadsheets().batchUpdate(spreadsheetId, del).execute();
+
+
 
             // 書き込みテスト！
             ValueRange content = new ValueRange();
