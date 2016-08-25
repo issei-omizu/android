@@ -50,6 +50,11 @@ import android.widget.Toast;
 import android.graphics.Color;
 import android.graphics.Paint;
 
+import android.content.ContentValues;
+import android.content.Intent;
+import android.database.Cursor;
+import android.database.sqlite.SQLiteDatabase;
+
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -115,11 +120,17 @@ public class MainActivity extends AppCompatActivity
 
     private Map<String, List<String>> mapWeight = new HashMap<>();
 
+    private SQLiteDatabase mDbWeight;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+
+        // db
+        MyOpenHelper helper = new MyOpenHelper(this);
+        this.mDbWeight = helper.getWritableDatabase();
+
 
         this.mRlChart = (RelativeLayout) findViewById(R.id.rlChart);
         this.mRlWeight = (RelativeLayout) findViewById(R.id.rlWeight);
@@ -257,8 +268,48 @@ public class MainActivity extends AppCompatActivity
         List listValue = Arrays.asList(editWeight.getText().toString(), editBodyFatPercentage.getText().toString());
         mListWrite.add(listValue);
 
+        // 体重データ更新
+        List updateWeight = this.mapWeight.get(mDate);
+        List values;
+        Integer count = this.mapWeight.size() + 1;
+        if (updateWeight != null) {
+            values = Arrays.asList(updateWeight.get(0).toString(), editWeight.getText().toString(), editBodyFatPercentage.getText().toString());
+        } else {
+            values = Arrays.asList(count.toString(), editWeight.getText().toString(), editBodyFatPercentage.getText().toString());
+        }
+
+        this.mapWeight.put(mDate, values);
+
+        // 本当に更新された？確認用
+        updateWeight = this.mapWeight.get(mDate);
+
 //        int index = mapWeight
 //        mRangeWrite = "";
+
+
+        // sqliteに保存
+//        Cursor c = this.mDbWeight.query("weight", new String[] { "name", "age" }, null,
+//                null, null, null, null);
+
+        Cursor c = this.mDbWeight.query("weight", new String[] {"date", "weight", "body_fat_percentage"}, "date = ?", new String[]{ mDate }, null, null, "date DESC");
+
+        boolean mov = c.moveToFirst();
+        c.close();
+
+        if (mov) {
+            ContentValues updateValues = new ContentValues();
+            updateValues.put("weight", editWeight.getText().toString());
+            updateValues.put("body_fat_percentage", editBodyFatPercentage.getText().toString());
+            this.mDbWeight.update("weight", updateValues, "date=?", new String[] { mDate });
+        } else {
+            ContentValues insertValues = new ContentValues();
+            insertValues.put("date", mDate);
+            insertValues.put("weight", editWeight.getText().toString());
+            insertValues.put("body_fat_percentage", editBodyFatPercentage.getText().toString());
+            long id = this.mDbWeight.insert("weight", null, insertValues);
+            long confirm = id;
+        }
+
     }
 
     private void putResultsFromApi() {
@@ -524,7 +575,7 @@ public class MainActivity extends AppCompatActivity
             DimensionRange dimensionRange = new DimensionRange();
             dimensionRange.setSheetId(worksheetId);
             dimensionRange.setDimension("COLUMNS");
-            dimensionRange.setStartIndex(1);
+            dimensionRange.setStartIndex(0);
             dimensionRange.setEndIndex(3);
 
             deleteDimensionRequest.setRange(dimensionRange);
@@ -538,7 +589,15 @@ public class MainActivity extends AppCompatActivity
 
             // 列追加
             requests.add(new Request()
-                    .setAppendDimension(new AppendDimensionRequest().setSheetId(worksheetId).setDimension("COLUMNS").setLength(3)));
+                    .setAppendDimension(new AppendDimensionRequest()
+                            .setSheetId(worksheetId)
+                            .setDimension("COLUMNS")
+                            .setLength(3)));
+
+            del.setRequests(requests);
+            BatchUpdateSpreadsheetResponse retDel = this.mService.spreadsheets().batchUpdate(spreadsheetId, del).execute();
+
+            requests.clear();
 
             // 体重データ全登録
             List<CellData> values;
@@ -605,8 +664,9 @@ public class MainActivity extends AppCompatActivity
 //                    .setUpdateCells()
 
 
+            del.clear();
             del.setRequests(requests);
-            BatchUpdateSpreadsheetResponse retDel = this.mService.spreadsheets().batchUpdate(spreadsheetId, del).execute();
+            retDel = this.mService.spreadsheets().batchUpdate(spreadsheetId, del).execute();
 
 
 
@@ -633,7 +693,8 @@ public class MainActivity extends AppCompatActivity
 //            String range = "Class Data!A2:E";
             String spreadsheetId = "1CYOcWrQG7VG9wwPmf2VqI2Xqf-YclI04LiUB8Do_v0Q";
             int rangeStart = 2;
-            String range = "数値!A" + rangeStart + ":C";
+//            String range = "数値!A" + rangeStart + ":C";
+            String range = "weight!A" + rangeStart + ":C";
             ValueRange response = this.mService.spreadsheets().values()
                     .get(spreadsheetId, range)
                     .execute();
