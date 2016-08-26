@@ -109,6 +109,8 @@ public class MainActivity extends AppCompatActivity
     private LinearLayout chartlayout;
     private LinearLayout activityLayout;
 
+    private Button mBtnImport;
+    private Button mBtnExport;
     private TextView mTextView;
     private EditText editWeight;
     private EditText editBodyFatPercentage;
@@ -143,12 +145,30 @@ public class MainActivity extends AppCompatActivity
         this.editWeight = (EditText) findViewById(R.id.editWeight);
         this.editBodyFatPercentage = (EditText) findViewById(R.id.editBodyFatPercentage);
 
+        this.mBtnImport = (Button) findViewById(R.id.btnImport);
+        this.mBtnImport.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                setImportData();
+                importFromApi();
+            }
+        });
+
+        this.mBtnExport = (Button) findViewById(R.id.btnExport);
+        this.mBtnExport.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                setExportData();
+                importFromApi();
+            }
+        });
+
         this.editWeight.setOnFocusChangeListener(new OnFocusChangeListener() {
             @Override
             public void onFocusChange(View v, boolean hasFocus) {
                 if(!hasFocus) {
                     setWriteDate();
-                    putResultsFromApi();
+//                    putResultsFromApi();
                 }
             }
         });
@@ -158,7 +178,7 @@ public class MainActivity extends AppCompatActivity
             public void onFocusChange(View v, boolean hasFocus) {
                 if(!hasFocus) {
                     setWriteDate();
-                    putResultsFromApi();
+//                    putResultsFromApi();
                 }
             }
         });
@@ -172,19 +192,42 @@ public class MainActivity extends AppCompatActivity
 
                 List test = mapWeight.get(mDate);
 
-                editWeight.setText("0");
-                editBodyFatPercentage.setText("0");
+                editWeight.setText("");
+                editBodyFatPercentage.setText("");
 
-                if (test != null) {
-                    mRangeWrite = String.format("Sheet3!A%s:B%s", test.get(0), test.get(0));
 
-                    mTextView.setText(mDate + "::" + mRangeWrite);
+                // sqliteからデータ取得
+                Cursor c = mDbWeight.query("weight", new String[]{"date", "weight", "body_fat_percentage"}, "date = ?", new String[]{mDate}, null, null, "date DESC");
 
-                    if (test.size() > 1) {
-                        editWeight.setText(test.get(1).toString());
-                        editBodyFatPercentage.setText(test.get(2).toString());
+                boolean mov = c.moveToFirst();
+
+                String weight = "";
+                String bodyFatPercentage = "";
+                if (mov) {
+                    weight = c.getString(1);
+                    bodyFatPercentage = c.getString(2);
+
+                    if (weight != null) {
+                        editWeight.setText(weight);
+                    }
+
+                    if (bodyFatPercentage != null) {
+                        editBodyFatPercentage.setText(bodyFatPercentage);
                     }
                 }
+
+                c.close();
+
+//                if (test != null) {
+//                    mRangeWrite = String.format("Sheet3!A%s:B%s", test.get(0), test.get(0));
+//
+//                    mTextView.setText(mDate + "::" + mRangeWrite);
+//
+//                    if (test.size() > 1) {
+//                        editWeight.setText(test.get(1).toString());
+//                        editBodyFatPercentage.setText(test.get(2).toString());
+//                    }
+//                }
             }
         });
 
@@ -240,7 +283,7 @@ public class MainActivity extends AppCompatActivity
                 .setBackOff(new ExponentialBackOff());
 
 
-        getResultsFromApi();
+//        getResultsFromApi();
 
     }
 
@@ -263,9 +306,20 @@ public class MainActivity extends AppCompatActivity
     }
 
     private void setWriteDate() {
+        String weight = editWeight.getText().toString();
+        String bodyFatPercentage = editBodyFatPercentage.getText().toString();
+
+        if (weight.isEmpty()) {
+//            weight = "0";
+        }
+
+        if (bodyFatPercentage.isEmpty()) {
+//            bodyFatPercentage = "0";
+        }
+
         mApiMode = 2;
         mListWrite = new ArrayList<>();
-        List listValue = Arrays.asList(editWeight.getText().toString(), editBodyFatPercentage.getText().toString());
+        List listValue = Arrays.asList(weight, bodyFatPercentage);
         mListWrite.add(listValue);
 
         // 体重データ更新
@@ -273,9 +327,9 @@ public class MainActivity extends AppCompatActivity
         List values;
         Integer count = this.mapWeight.size() + 1;
         if (updateWeight != null) {
-            values = Arrays.asList(updateWeight.get(0).toString(), editWeight.getText().toString(), editBodyFatPercentage.getText().toString());
+            values = Arrays.asList(updateWeight.get(0).toString(), weight, bodyFatPercentage);
         } else {
-            values = Arrays.asList(count.toString(), editWeight.getText().toString(), editBodyFatPercentage.getText().toString());
+            values = Arrays.asList(count.toString(), weight, bodyFatPercentage);
         }
 
         this.mapWeight.put(mDate, values);
@@ -283,33 +337,55 @@ public class MainActivity extends AppCompatActivity
         // 本当に更新された？確認用
         updateWeight = this.mapWeight.get(mDate);
 
-//        int index = mapWeight
-//        mRangeWrite = "";
-
 
         // sqliteに保存
-//        Cursor c = this.mDbWeight.query("weight", new String[] { "name", "age" }, null,
-//                null, null, null, null);
-
         Cursor c = this.mDbWeight.query("weight", new String[] {"date", "weight", "body_fat_percentage"}, "date = ?", new String[]{ mDate }, null, null, "date DESC");
 
         boolean mov = c.moveToFirst();
         c.close();
 
         if (mov) {
-            ContentValues updateValues = new ContentValues();
-            updateValues.put("weight", editWeight.getText().toString());
-            updateValues.put("body_fat_percentage", editBodyFatPercentage.getText().toString());
-            this.mDbWeight.update("weight", updateValues, "date=?", new String[] { mDate });
+            if (weight.isEmpty() && bodyFatPercentage.isEmpty()) {
+                // 体重・体脂肪率両方とも未入力の場合はレコードを削除する
+                mDbWeight.delete( "weight", "date=?", new String[] { mDate });
+            } else {
+                ContentValues updateValues = new ContentValues();
+                updateValues.put("weight", weight);
+                updateValues.put("body_fat_percentage", bodyFatPercentage);
+                this.mDbWeight.update("weight", updateValues, "date=?", new String[] { mDate });
+            }
         } else {
-            ContentValues insertValues = new ContentValues();
-            insertValues.put("date", mDate);
-            insertValues.put("weight", editWeight.getText().toString());
-            insertValues.put("body_fat_percentage", editBodyFatPercentage.getText().toString());
-            long id = this.mDbWeight.insert("weight", null, insertValues);
-            long confirm = id;
+            // 体重・体脂肪率どちらか入力されている場合は追加する
+            if (!weight.isEmpty() || !bodyFatPercentage.isEmpty()) {
+                ContentValues insertValues = new ContentValues();
+                insertValues.put("date", mDate);
+                insertValues.put("weight", weight);
+                insertValues.put("body_fat_percentage", bodyFatPercentage);
+                long id = this.mDbWeight.insert("weight", null, insertValues);
+                long confirm = id;
+            }
         }
 
+    }
+
+    private void setImportData() {
+        mApiMode = 3;
+    }
+
+    private void setExportData() {
+        mApiMode = 4;
+    }
+
+    private void importFromApi() {
+        if (! isGooglePlayServicesAvailable()) {
+            acquireGooglePlayServices();
+        } else if (mCredential.getSelectedAccountName() == null) {
+            chooseAccount();
+        } else if (! isDeviceOnline()) {
+            mOutputText.setText("No network connection available.");
+        } else {
+            new MakeRequestTask(mCredential).execute();
+        }
     }
 
     private void putResultsFromApi() {
@@ -555,6 +631,12 @@ public class MainActivity extends AppCompatActivity
                     case 2:
                         val = putDataFromApi();
                         break;
+                    case 3:
+                        val = importDataFromApi();
+                        break;
+                    case 4:
+                        val = exportDataFromApi();
+                        break;
                 }
                 return val;
             } catch (Exception e) {
@@ -563,6 +645,155 @@ public class MainActivity extends AppCompatActivity
                 return null;
             }
         }
+
+        private List<List<Object>> exportDataFromApi() throws IOException {
+            // sqliteのデータを全取得
+            Cursor c = mDbWeight.query("weight", new String[]{"date", "weight", "body_fat_percentage"}, null, null, null, null, "date DESC");
+            boolean mov = c.moveToFirst();
+
+
+            String spreadsheetId = "1CYOcWrQG7VG9wwPmf2VqI2Xqf-YclI04LiUB8Do_v0Q";
+            Integer worksheetId = 1144545091;
+
+            // 列削除テスト！
+            BatchUpdateSpreadsheetRequest del = new BatchUpdateSpreadsheetRequest();
+            DeleteDimensionRequest deleteDimensionRequest = new DeleteDimensionRequest();
+
+            DimensionRange dimensionRange = new DimensionRange();
+            dimensionRange.setSheetId(worksheetId);
+            dimensionRange.setDimension("COLUMNS");
+            dimensionRange.setStartIndex(0);
+            dimensionRange.setEndIndex(3);
+
+            deleteDimensionRequest.setRange(dimensionRange);
+
+
+            List<Request> requests = new ArrayList<>();
+
+            // 列削除
+            requests.add(new Request()
+                    .setDeleteDimension(deleteDimensionRequest));
+
+            // 列追加
+            requests.add(new Request()
+                    .setAppendDimension(new AppendDimensionRequest()
+                            .setSheetId(worksheetId)
+                            .setDimension("COLUMNS")
+                            .setLength(3)));
+
+            del.setRequests(requests);
+            BatchUpdateSpreadsheetResponse retDel = this.mService.spreadsheets().batchUpdate(spreadsheetId, del).execute();
+
+            requests.clear();
+
+            // 体重データ全登録
+            List<CellData> values;
+            Integer count = 1;
+
+            String date = "";
+            String weight = "";
+            String bodyFatPercentage = "";
+
+            while (mov) {
+                date = c.getString(0);
+                weight = c.getString(1);
+                bodyFatPercentage = c.getString(2);
+
+                /**
+                 * 体重・体脂肪率が両方ともデータが設定されていない時はデータを
+                 * 登録しない。
+                 */
+                if (weight != null || bodyFatPercentage != null) {
+                    values = new ArrayList<>();
+
+                    // date
+                    values.add(new CellData()
+                            .setUserEnteredValue(new ExtendedValue()
+                                    .setStringValue(date)));
+
+                    values.add(new CellData()
+                            .setUserEnteredValue(new ExtendedValue()
+                                    .setStringValue(weight)));
+
+                    values.add(new CellData()
+                            .setUserEnteredValue(new ExtendedValue()
+                                    .setStringValue(bodyFatPercentage)));
+
+                    requests.add(new Request()
+                            .setUpdateCells(new UpdateCellsRequest()
+                                    .setStart(new GridCoordinate()
+                                            .setSheetId(worksheetId)
+                                            .setRowIndex(count)
+                                            .setColumnIndex(0))
+                                    .setRows(Arrays.asList(
+                                            new RowData().setValues(values)))
+                                    .setFields("userEnteredValue,userEnteredFormat.backgroundColor")));
+
+                    count++;
+                }
+
+                // 次のレコードへ
+                mov = c.moveToNext();
+            }
+
+            c.close();
+
+            del.clear();
+            del.setRequests(requests);
+            retDel = this.mService.spreadsheets().batchUpdate(spreadsheetId, del).execute();
+
+            return null;
+        }
+
+
+        private List<List<Object>> importDataFromApi() throws IOException {
+            String spreadsheetId = "1CYOcWrQG7VG9wwPmf2VqI2Xqf-YclI04LiUB8Do_v0Q";
+            int rangeStart = 2;
+            String range = "weight!A" + rangeStart + ":C";
+            ValueRange response = this.mService.spreadsheets().values()
+                    .get(spreadsheetId, range)
+                    .execute();
+
+            List<List<Object>> values = response.getValues();
+
+            /**
+             * 取得したデータをsqliteに書き込み
+             */
+            // weightテーブルのデータを全削除
+            mDbWeight.delete( "weight", null, null);
+
+            // 消えたかどうか確認する（テスト用）
+            Cursor c = mDbWeight.query("weight", new String[] {"date", "weight", "body_fat_percentage"}, null, null, null, null, "date DESC");
+            boolean mov = c.moveToFirst();
+            c.close();
+
+            // 取得したデータをweightテーブルに追加
+            if (values != null) {
+                ContentValues insertValues = new ContentValues();
+                for (List row : values) {
+                    insertValues.clear();
+                    insertValues.put("date", row.get(0).toString());
+
+                    if (row.get(1) != null) {
+                        insertValues.put("weight", row.get(1).toString());
+                    }
+                    if (row.get(2) != null) {
+                        insertValues.put("body_fat_percentage", row.get(2).toString());
+                    }
+
+                    long id = mDbWeight.insert("weight", null, insertValues);
+                    long confirm = id;
+                }
+
+                // 追加されたかどうか確認する（テスト用）
+                c = mDbWeight.query("weight", new String[] {"date", "weight", "body_fat_percentage"}, null, null, null, null, "date DESC");
+                mov = c.moveToFirst();
+                c.close();
+            }
+
+            return values;
+        }
+
 
         private List<List<Object>> putDataFromApi() throws IOException {
             String spreadsheetId = "1CYOcWrQG7VG9wwPmf2VqI2Xqf-YclI04LiUB8Do_v0Q";
@@ -764,9 +995,11 @@ public class MainActivity extends AppCompatActivity
 //                mOutputText.setText(TextUtils.join("\n", output));
 //            }
 
-            GraphicalView graphicalView = TimeChartView(output);
-            chartlayout.removeAllViews();
-            chartlayout.addView(graphicalView);
+            if (output != null) {
+                GraphicalView graphicalView = TimeChartView(output);
+                chartlayout.removeAllViews();
+                chartlayout.addView(graphicalView);
+            }
         }
 
         @Override
