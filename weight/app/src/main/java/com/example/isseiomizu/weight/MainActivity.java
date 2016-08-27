@@ -777,7 +777,11 @@ public class MainActivity extends AppCompatActivity
                     if (row.get(1) != null) {
                         insertValues.put("weight", row.get(1).toString());
                     }
-                    if (row.get(2) != null) {
+                    /**
+                     * 一番最後の列にデータが存在しない（空）ときはデータが取得されない。
+                     * 例外エラーを避けるためにデータサイズで判断する。
+                     */
+                    if (row.size() == 3) {
                         insertValues.put("body_fat_percentage", row.get(2).toString());
                     }
 
@@ -1039,13 +1043,18 @@ public class MainActivity extends AppCompatActivity
         List<Double> listWeight = new ArrayList<>();
         List<Double> listTargetWeight = new ArrayList<>();
 
+        String weight = "";
+
         if (output != null) {
             for (int i = output.size() - 1; i >= 0 ; i--) {
                 List row = output.get(i);
                 if (row.size() > 1) {
-                    listDate.add(row.get(0).toString());
-                    listWeight.add(Double.parseDouble(row.get(1).toString()));
-                    listTargetWeight.add(55.0);
+                    weight = row.get(1).toString();
+                    if (!weight.isEmpty()) {
+                        listDate.add(row.get(0).toString());
+                        listWeight.add(Double.parseDouble(weight));
+                        listTargetWeight.add(55.0);
+                    }
                 }
             }
 //            for (List row : output) {
