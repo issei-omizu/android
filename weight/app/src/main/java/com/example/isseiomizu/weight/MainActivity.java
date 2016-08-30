@@ -188,7 +188,7 @@ public class MainActivity extends AppCompatActivity
             @Override
             public void onDateChanged(DatePicker view, int year, int monthOfYear, int dayOfMonth) {
                 // 日付を選択した時に実行される
-                mDate = (monthOfYear + 1) + "/" + dayOfMonth + "/" + year;
+                mDate = String.format("%04d%02d%02d", year, monthOfYear + 1, dayOfMonth);
 
                 List test = mapWeight.get(mDate);
 
