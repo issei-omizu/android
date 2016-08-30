@@ -772,6 +772,7 @@ public class MainActivity extends AppCompatActivity
                 ContentValues insertValues = new ContentValues();
                 for (List row : values) {
                     insertValues.clear();
+
                     insertValues.put("date", row.get(0).toString());
 
                     if (row.get(1) != null) {
@@ -1029,61 +1030,63 @@ public class MainActivity extends AppCompatActivity
     }
 
     private GraphicalView TimeChartView(List<List<Object>> output) {
-        // (1)グラフデータの準備
-        // X軸 日付
-        String [] xStrValue={ "2015/12/22","2015/12/21","2015/12/20","2015/12/18" };
-        // Y軸 体重
-        Double[] yDoubleValue={ 71.2, 71.8, 70.8, 70.4 };
-        // X軸 日付
-        String [] xStrValueTarget={ "2015/12/22","2015/12/21","2015/12/20","2015/12/19", "2015/12/18"};
-        // Y軸 目標体重
-        Double[] yDoubleValueTarget={ 70.3, 70.3, 70.3, 70.3, 70.3 };
-
         List<String> listDate = new ArrayList<>();
         List<Double> listWeight = new ArrayList<>();
         List<Double> listTargetWeight = new ArrayList<>();
 
+        String date = "";
         String weight = "";
+        String bodyFatPercentage = "";
 
-        if (output != null) {
-            for (int i = output.size() - 1; i >= 0 ; i--) {
-                List row = output.get(i);
-                if (row.size() > 1) {
-                    weight = row.get(1).toString();
-                    if (!weight.isEmpty()) {
-                        listDate.add(row.get(0).toString());
-                        listWeight.add(Double.parseDouble(weight));
-                        listTargetWeight.add(55.0);
-                    }
-                }
+        // (1)グラフデータの準備
+        // X軸 日付
+        String[] xStrValue = {"2015/12/22", "2015/12/21", "2015/12/20", "2015/12/18"};
+        // Y軸 体重
+        Double[] yDoubleValue = {71.2, 71.8, 70.8, 70.4};
+        // X軸 日付
+        String[] xStrValueTarget = {"2015/12/22", "2015/12/21", "2015/12/20", "2015/12/19", "2015/12/18"};
+        // Y軸 目標体重
+        Double[] yDoubleValueTarget = {70.3, 70.3, 70.3, 70.3, 70.3};
+
+        // sqliteからデータを全取得
+        Cursor c = mDbWeight.query("weight", new String[]{"date", "weight", "body_fat_percentage"}, null, null, null, null, "date DESC");
+        boolean mov = c.moveToFirst();
+
+        while (mov) {
+            date = c.getString(0);
+            weight = c.getString(1);
+            bodyFatPercentage = c.getString(2);
+
+            if (weight != null && !weight.isEmpty()) {
+                listDate.add(date);
+                listWeight.add(Double.parseDouble(weight));
+                listTargetWeight.add(55.0);
             }
-//            for (List row : output) {
-//                if (row.size() > 1) {
-//                    listDate.add(row.get(0).toString());
-//                    listWeight.add(Double.parseDouble(row.get(1).toString()));
-//                }
-//            }
+
+            // 次のレコードへ
+            mov = c.moveToNext();
         }
+
+        c.close();
+
 
         xStrValue = listDate.toArray(new String[listDate.size()]);
         xStrValueTarget = listDate.toArray(new String[listDate.size()]);
         yDoubleValue = listWeight.toArray(new Double[listWeight.size()]);
-        yDoubleValueTarget = listTargetWeight.toArray(new Double[listWeight.size()]);
-
-
+        yDoubleValueTarget = listTargetWeight.toArray(new Double[listTargetWeight.size()]);
 
 
         // 日付を文字形式から Date型へ変換
-        int DataCount=xStrValue.length;
+        int DataCount = xStrValue.length;
         Date[] xDateValue = new Date[DataCount];
         for (int i = 0; i < DataCount; i++) {
-            xDateValue[i] =String2date(xStrValue[i]);
+            xDateValue[i] = String2date(xStrValue[i]);
         }
 
-        int DataCountTarget=xStrValueTarget.length;
+        int DataCountTarget = xStrValueTarget.length;
         Date[] xDateValueTarget = new Date[DataCountTarget];
         for (int i = 0; i < DataCountTarget; i++) {
-            xDateValueTarget[i] =String2date(xStrValueTarget[i]);
+            xDateValueTarget[i] = String2date(xStrValueTarget[i]);
         }
 
         // (2) グラフのタイトル、X軸Y軸ラベル、色等の設定
@@ -1151,7 +1154,7 @@ public class MainActivity extends AppCompatActivity
         dataset.addSeries(seriesTarget);
 
         // (5)タイムチャートグラフの作成
-        GraphicalView mChartView= ChartFactory.getTimeChartView(this, dataset, renderer, "M/d");
+        GraphicalView mChartView = ChartFactory.getTimeChartView(this, dataset, renderer, "M/d");
 
         return mChartView;
 
@@ -1163,7 +1166,7 @@ public class MainActivity extends AppCompatActivity
     private Date String2date(String strDate) {
         Date dateDate=null;
         // 日付文字列→date型変換フォーマットを指定して
-        SimpleDateFormat sdf1 = new SimpleDateFormat("M/d/yyyy");
+        SimpleDateFormat sdf1 = new SimpleDateFormat("yyyyMMdd");
 
         try {
             dateDate = sdf1.parse(strDate);
