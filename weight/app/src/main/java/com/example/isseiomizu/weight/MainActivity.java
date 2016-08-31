@@ -296,13 +296,17 @@ public class MainActivity extends AppCompatActivity
         if (config.orientation == Configuration.ORIENTATION_LANDSCAPE) {
             this.mRlChart.setVisibility(View.VISIBLE);
             this.mRlWeight.setVisibility(View.INVISIBLE);
+
+            GraphicalView graphicalView = TimeChartView();
+            chartlayout.removeAllViews();
+            chartlayout.addView(graphicalView);
         } else {
             this.mRlChart.setVisibility(View.INVISIBLE);
             this.mRlWeight.setVisibility(View.VISIBLE);
         }
 
         Toast.makeText(this, "Screenが" + orientation + "になりました",
-                Toast.LENGTH_LONG ).show();
+                Toast.LENGTH_LONG).show();
     }
 
     private void setWriteDate() {
@@ -993,18 +997,6 @@ public class MainActivity extends AppCompatActivity
         @Override
         protected void onPostExecute(List<List<Object>> output) {
             mProgress.hide();
-//            if (output == null || output.size() == 0) {
-//                mOutputText.setText("No results returned.");
-//            } else {
-//                output.add(0, "Data retrieved using the Google Sheets API:");
-//                mOutputText.setText(TextUtils.join("\n", output));
-//            }
-
-            if (output != null) {
-                GraphicalView graphicalView = TimeChartView(output);
-                chartlayout.removeAllViews();
-                chartlayout.addView(graphicalView);
-            }
         }
 
         @Override
@@ -1029,7 +1021,7 @@ public class MainActivity extends AppCompatActivity
         }
     }
 
-    private GraphicalView TimeChartView(List<List<Object>> output) {
+    private GraphicalView TimeChartView() {
         List<String> listDate = new ArrayList<>();
         List<Double> listWeight = new ArrayList<>();
         List<Double> listTargetWeight = new ArrayList<>();
