@@ -1091,7 +1091,8 @@ public class MainActivity extends AppCompatActivity
         renderer.setLegendTextSize(25);                 // 凡例　テキストサイズ
         renderer.setPointSize(3f);                      // ポイントマーカーサイズ
         renderer.setXAxisMin(xDateValue[xDateValue.length - 1].getTime() - HALF_DAY);  // X軸最小値
-        renderer.setXAxisMax(xDateValue[0].getTime() + HALF_DAY);    // X軸最大値
+//        renderer.setXAxisMax(xDateValue[0].getTime() + HALF_DAY);    // X軸最大値
+        renderer.setXAxisMax(xDateValue[xDateValue.length - 31].getTime() + HALF_DAY);    // X軸最大値
         renderer.setYAxisMin(53.0f);                    // Y軸最小値
         renderer.setYAxisMax(60.0f);                    // Y軸最大値
         renderer.setXLabelsAlign(Paint.Align.CENTER);         // X軸ラベル配置位置
@@ -1100,7 +1101,7 @@ public class MainActivity extends AppCompatActivity
         renderer.setLabelsColor(Color.BLACK);          // ラベルカラー
         renderer.setXLabelsColor(Color.BLACK);
         renderer.setYLabelsColor(0, Color.BLACK);
-        renderer.setXLabels(500);                         // X軸ラベルのおおよその数
+        renderer.setXLabels(31);                         // X軸ラベルのおおよその数
         renderer.setYLabels(10);                         // Y軸ラベルのおおよその数
         renderer.setLabelsTextSize(25);                 // ラベルサイズ
         // グリッド表示
