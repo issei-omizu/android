@@ -12,34 +12,7 @@
     <RelativeLayout
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:id="@+id/rlChart">
-
-        <LinearLayout
-            android:id="@+id/chart"
-            android:layout_width="wrap_content"
-            android:layout_height="350dp"
-            android:orientation="horizontal"
-            android:layout_alignParentRight="true"
-            android:layout_alignParentEnd="true"
-            android:layout_alignParentLeft="true"
-            android:layout_alignParentStart="true"
-            android:background="@color/accent_material_dark"
-            android:layout_alignParentTop="true"
-            android:layout_alignParentBottom="true">
-
-        </LinearLayout>
-    </RelativeLayout>
-
-    <RelativeLayout
-        android:layout_width="match_parent"
-        android:layout_height="match_parent"
         android:id="@+id/rlWeight">
-
-        <TextView
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="Hello World!"
-            android:id="@+id/textView" />
 
         <DatePicker
             android:layout_width="wrap_content"
@@ -50,31 +23,29 @@
             android:layout_alignParentEnd="true" />
 
         <EditText
-            android:layout_width="wrap_content"
+            android:layout_width="100dp"
             android:layout_height="wrap_content"
             android:inputType="number|numberDecimal"
             android:ems="10"
             android:id="@+id/editWeight"
-            android:layout_below="@+id/textView"
             android:layout_alignParentLeft="true"
             android:layout_alignParentStart="true" />
 
         <EditText
-            android:layout_width="wrap_content"
+            android:layout_width="100dp"
             android:layout_height="wrap_content"
             android:inputType="number|numberDecimal"
             android:ems="10"
             android:id="@+id/editBodyFatPercentage"
-            android:layout_below="@+id/editWeight"
-            android:layout_alignParentLeft="true"
-            android:layout_alignParentStart="true" />
+            android:layout_alignTop="@+id/editWeight"
+            android:layout_centerHorizontal="true" />
 
         <Button
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="Import"
             android:id="@+id/btnImport"
-            android:layout_alignParentTop="true"
+            android:layout_below="@+id/editBodyFatPercentage"
             android:layout_alignParentRight="true"
             android:layout_alignParentEnd="true" />
 
@@ -83,9 +54,18 @@
             android:layout_height="wrap_content"
             android:text="Export"
             android:id="@+id/btnExport"
+            android:layout_below="@+id/button"
+            android:layout_toLeftOf="@+id/btnImport"
+            android:layout_toStartOf="@+id/btnImport" />
+
+        <Button
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Graph"
+            android:id="@+id/button"
             android:layout_alignBottom="@+id/editBodyFatPercentage"
-            android:layout_alignParentRight="true"
-            android:layout_alignParentEnd="true" />
+            android:layout_alignLeft="@+id/btnImport"
+            android:onClick="startSubActivity" />
     </RelativeLayout>
 
 </RelativeLayout>
