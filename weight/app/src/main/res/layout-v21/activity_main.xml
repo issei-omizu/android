@@ -66,6 +66,16 @@
             android:layout_alignBottom="@+id/editBodyFatPercentage"
             android:layout_alignLeft="@+id/btnImport"
             android:onClick="startSubActivity" />
+
+        <Button
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="list"
+            android:id="@+id/btnListCalendar"
+            android:layout_above="@+id/datePicker"
+            android:layout_alignParentLeft="true"
+            android:layout_alignParentStart="true"
+            android:onClick="startListCalendarActivity" />
     </RelativeLayout>
 
 </RelativeLayout>

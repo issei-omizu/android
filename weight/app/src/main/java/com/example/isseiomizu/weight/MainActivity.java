@@ -212,8 +212,13 @@ public class MainActivity extends AppCompatActivity
                 Toast.LENGTH_LONG).show();
     }
 
-    public void startSubActivity(View view){
+    public void startSubActivity(View view) {
         Intent intent = new Intent(getApplication(), GraphActivity.class);
+        startActivity(intent);
+    }
+
+    public void startListCalendarActivity(View view) {
+        Intent intent = new Intent(getApplication(), ListCalendarActivity.class);
         startActivity(intent);
     }
 
