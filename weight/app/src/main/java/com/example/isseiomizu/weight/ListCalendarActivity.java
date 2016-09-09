@@ -1,13 +1,18 @@
 package com.example.isseiomizu.weight;
 
 import java.util.ArrayList;
+import java.util.Calendar;
 import java.util.List;
+import java.util.Locale;
 
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.view.View;
+
+import com.example.isseiomizu.weight.models.DayItem;
+import com.example.isseiomizu.weight.models.WeekItem;
 
 import se.emilsjolander.stickylistheaders.StickyListHeadersListView;
 
@@ -27,6 +32,20 @@ public class ListCalendarActivity extends AppCompatActivity {
         MyOpenHelper helper = new MyOpenHelper(this);
         this.mDbWeight = helper.getWritableDatabase();
 
+        // minimum and maximum date of our calendar
+        // 2 month behind, one year ahead, example: March 2015 <-> May 2015 <-> May 2016
+        Calendar minDate = Calendar.getInstance();
+        Calendar maxDate = Calendar.getInstance();
+
+        minDate.add(Calendar.MONTH, -2);
+        minDate.set(Calendar.DAY_OF_MONTH, 1);
+        maxDate.add(Calendar.YEAR, 1);
+
+        //////// This can be done once in another thread
+        CalendarManager calendarManager = CalendarManager.getInstance(getApplicationContext());
+        calendarManager.buildCal(minDate, maxDate, Locale.getDefault(), new DayItem(), new WeekItem());
+        calendarManager.loadWeights();
+
         mListView = (StickyListHeadersListView) findViewById(R.id.sticky_listview);
 
     }
@@ -35,7 +54,8 @@ public class ListCalendarActivity extends AppCompatActivity {
     protected void onResume() {
         super.onResume();
 
-        StickyAdapter adapter = new StickyAdapter(this, android.R.layout.simple_list_item_1, createSampleArray());
+//        StickyAdapter adapter = new StickyAdapter(this, android.R.layout.simple_list_item_1, createSampleArray());
+        StickyAdapter adapter = new StickyAdapter(this, android.R.layout.simple_list_item_1, CalendarManager.getInstance().getWeights());
         mListView.setAdapter(adapter);
     }
 

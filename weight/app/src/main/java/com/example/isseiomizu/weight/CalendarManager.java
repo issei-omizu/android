@@ -3,6 +3,8 @@ package com.example.isseiomizu.weight;
 import com.example.isseiomizu.weight.models.IDayItem;
 import com.example.isseiomizu.weight.models.IWeekItem;
 import com.example.isseiomizu.weight.models.CalendarEvent;
+import com.example.isseiomizu.weight.models.IWeightItem;
+import com.example.isseiomizu.weight.models.WeightItem;
 import com.example.isseiomizu.weight.utils.DateHelper;
 
 import android.content.Context;
@@ -36,6 +38,10 @@ public class CalendarManager {
     private IDayItem mCleanDay;
     private IWeekItem mCleanWeek;
 
+    /**
+     * List of weights used by the calendar
+     */
+    private List<IWeightItem> mWeights = new ArrayList<>();
     /**
      * List of days used by the calendar
      */
@@ -84,6 +90,10 @@ public class CalendarManager {
 
     public void setToday(Calendar today) {
         this.mToday = today;
+    }
+
+    public List<IWeightItem> getWeights() {
+        return mWeights;
     }
 
     public List<IWeekItem> getWeeks() {
@@ -165,7 +175,7 @@ public class CalendarManager {
             weekItem.setYear(currentYear);
             weekItem.setDate(date);
             weekItem.setMonth(currentMonth);
-//            weekItem.setLabel(mMonthHalfNameFormat.format(date));
+            weekItem.setLabel(mMonthHalfNameFormat.format(date));
             List<IDayItem> dayItems = getDayCells(mWeekCounter); // gather days for the built week
             weekItem.setDayItems(dayItems);
             mWeeks.add(weekItem);
@@ -176,6 +186,17 @@ public class CalendarManager {
 
             currentMonth = mWeekCounter.get(Calendar.MONTH);
             currentYear = mWeekCounter.get(Calendar.YEAR);
+        }
+    }
+
+    public void loadWeights() {
+
+        for (IWeekItem weekItem : getWeeks()) {
+            for (IDayItem dayItem : weekItem.getDayItems()) {
+                IWeightItem item = new WeightItem();
+                item.setDate(dayItem.getDate());
+                mWeights.add(item);
+            }
         }
     }
 
@@ -241,7 +262,7 @@ public class CalendarManager {
         Log.d(LOG_TAG, String.format("Buiding row week starting at %s", cal.getTime()));
         for (int c = 0; c < 7; c++) {
             IDayItem dayItem = mCleanDay.copy();
-//            dayItem.buildDayItemFromCal(cal);
+            dayItem.buildDayItemFromCal(cal);
             dayItems.add(dayItem);
             cal.add(Calendar.DATE, 1);
         }
@@ -253,8 +274,8 @@ public class CalendarManager {
     private void setLocale(Locale locale) {
         this.mLocale = locale;
         setToday(Calendar.getInstance(mLocale));
-//        mWeekdayFormatter = new SimpleDateFormat(getContext().getString(R.string.day_name_format), mLocale);
-//        mMonthHalfNameFormat = new SimpleDateFormat(getContext().getString(R.string.month_half_name_format), locale);
+        mWeekdayFormatter = new SimpleDateFormat(getContext().getString(R.string.day_name_format), mLocale);
+        mMonthHalfNameFormat = new SimpleDateFormat(getContext().getString(R.string.month_half_name_format), locale);
     }
 
     // endregion
