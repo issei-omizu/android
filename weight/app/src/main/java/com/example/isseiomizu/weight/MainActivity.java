@@ -1,5 +1,8 @@
 package com.example.isseiomizu.weight;
 
+import com.example.isseiomizu.weight.models.DayItem;
+import com.example.isseiomizu.weight.models.WeekItem;
+
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.view.View.OnFocusChangeListener;
@@ -47,7 +50,9 @@ import android.database.sqlite.SQLiteDatabase;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Calendar;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 import java.util.HashMap;
 
@@ -97,6 +102,19 @@ public class MainActivity extends AppCompatActivity
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+
+        // minimum and maximum date of our calendar
+        // 2 month behind, one year ahead, example: March 2015 <-> May 2015 <-> May 2016
+        Calendar minDate = Calendar.getInstance();
+        Calendar maxDate = Calendar.getInstance();
+
+        minDate.add(Calendar.MONTH, -2);
+        minDate.set(Calendar.DAY_OF_MONTH, 1);
+        maxDate.add(Calendar.YEAR, 1);
+
+        //////// This can be done once in another thread
+        CalendarManager calendarManager = CalendarManager.getInstance(getApplicationContext());
+        calendarManager.buildCal(minDate, maxDate, Locale.getDefault(), new DayItem(), new WeekItem());
 
         // db
         MyOpenHelper helper = new MyOpenHelper(this);
