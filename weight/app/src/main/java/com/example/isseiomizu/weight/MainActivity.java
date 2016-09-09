@@ -68,10 +68,10 @@ public class MainActivity extends AppCompatActivity
     private TextView mOutputText;
     ProgressDialog mProgress;
 
-    static final int REQUEST_ACCOUNT_PICKER = 1000;
-    static final int REQUEST_AUTHORIZATION = 1001;
-    static final int REQUEST_GOOGLE_PLAY_SERVICES = 1002;
-    static final int REQUEST_PERMISSION_GET_ACCOUNTS = 1003;
+    static final int REQUEST_ACCOUNT_PICKER = 100;
+    static final int REQUEST_AUTHORIZATION = 101;
+    static final int REQUEST_GOOGLE_PLAY_SERVICES = 102;
+    static final int REQUEST_PERMISSION_GET_ACCOUNTS = 103;
 
     private static final String BUTTON_TEXT = "Call Google Sheets API";
     private static final String PREF_ACCOUNT_NAME = "accountName";
@@ -103,18 +103,18 @@ public class MainActivity extends AppCompatActivity
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-        // minimum and maximum date of our calendar
-        // 2 month behind, one year ahead, example: March 2015 <-> May 2015 <-> May 2016
-        Calendar minDate = Calendar.getInstance();
-        Calendar maxDate = Calendar.getInstance();
-
-        minDate.add(Calendar.MONTH, -2);
-        minDate.set(Calendar.DAY_OF_MONTH, 1);
-        maxDate.add(Calendar.YEAR, 1);
-
-        //////// This can be done once in another thread
-        CalendarManager calendarManager = CalendarManager.getInstance(getApplicationContext());
-        calendarManager.buildCal(minDate, maxDate, Locale.getDefault(), new DayItem(), new WeekItem());
+//        // minimum and maximum date of our calendar
+//        // 2 month behind, one year ahead, example: March 2015 <-> May 2015 <-> May 2016
+//        Calendar minDate = Calendar.getInstance();
+//        Calendar maxDate = Calendar.getInstance();
+//
+//        minDate.add(Calendar.MONTH, -2);
+//        minDate.set(Calendar.DAY_OF_MONTH, 1);
+//        maxDate.add(Calendar.YEAR, 1);
+//
+//        //////// This can be done once in another thread
+//        CalendarManager calendarManager = CalendarManager.getInstance(getApplicationContext());
+//        calendarManager.buildCal(minDate, maxDate, Locale.getDefault(), new DayItem(), new WeekItem());
 
         // db
         MyOpenHelper helper = new MyOpenHelper(this);
