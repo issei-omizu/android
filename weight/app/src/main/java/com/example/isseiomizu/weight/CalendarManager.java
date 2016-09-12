@@ -8,14 +8,18 @@ import com.example.isseiomizu.weight.models.WeightItem;
 import com.example.isseiomizu.weight.utils.DateHelper;
 
 import android.content.Context;
+import android.database.Cursor;
+import android.database.sqlite.SQLiteDatabase;
 import android.util.Log;
 
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
+import java.util.Map;
 
 /**
  * This class manages information about the calendar. (Events, weather info...)
@@ -28,8 +32,12 @@ public class CalendarManager {
 
     private static CalendarManager mInstance;
 
+    private static SQLiteDatabase mDbWeight;
+
     private Context mContext;
     private Locale mLocale;
+    private Calendar mMinCal;
+    private Calendar mMaxCal;
     private Calendar mToday = Calendar.getInstance();
     private SimpleDateFormat mWeekdayFormatter;
     private SimpleDateFormat mMonthHalfNameFormat;
@@ -65,6 +73,13 @@ public class CalendarManager {
         if (mInstance == null) {
             mInstance = new CalendarManager(context);
         }
+
+        // db
+        if (mDbWeight == null) {
+            MyOpenHelper helper = new MyOpenHelper(context);
+            mDbWeight = helper.getWritableDatabase();
+        }
+
         return mInstance;
     }
 
@@ -142,8 +157,8 @@ public class CalendarManager {
         mCleanDay = cleanDay;
         mCleanWeek = cleanWeek;
 
-        Calendar mMinCal = Calendar.getInstance(mLocale);
-        Calendar mMaxCal = Calendar.getInstance(mLocale);
+        mMinCal = Calendar.getInstance(mLocale);
+        mMaxCal = Calendar.getInstance(mLocale);
         Calendar mWeekCounter = Calendar.getInstance(mLocale);
 
         mMinCal.setTime(minDate.getTime());
@@ -162,7 +177,7 @@ public class CalendarManager {
         int currentYear = mWeekCounter.get(Calendar.YEAR);
 
         // Loop through the weeks
-        while ((currentMonth <= maxMonth // Up to, including the month.
+        while ((currentMonth <= maxMonth + 1 // Up to, including the month.
                 || currentYear < maxYear) // Up to the year.
                 && currentYear < maxYear + 1) { // But not > next yr.
 
@@ -190,12 +205,68 @@ public class CalendarManager {
     }
 
     public void loadWeights() {
+        mWeights.clear();
+
+        Map<String, IWeightItem> map = new HashMap<>();
+
+        List<String> list = new ArrayList<>();
+
+        String date = "";
+        String weight = "";
+        String bodyFatPercentage = "";
+
+        // sqliteからデータを全取得
+        Cursor c = mDbWeight.query("weight", new String[]{"date", "weight", "body_fat_percentage"}, null, null, null, null, "date DESC");
+        boolean mov = c.moveToFirst();
+
+        while (mov) {
+            IWeightItem item = new WeightItem();
+
+            date = c.getString(0);
+            weight = c.getString(1);
+            bodyFatPercentage = c.getString(2);
+
+            item.setWeight(weight);
+            item.setBodyFatPercentage(bodyFatPercentage);
+
+            map.put(date, item);
+
+            // 次のレコードへ
+            mov = c.moveToNext();
+        }
+        c.close();
+
+        SimpleDateFormat sdf1 = new SimpleDateFormat("yyyyMMdd");
+
+
+        int maxMonth = mMaxCal.get(Calendar.MONTH);
+        int maxYear = mMaxCal.get(Calendar.YEAR);
+
+        Calendar mWeekCounter = Calendar.getInstance(mLocale);
+        mWeekCounter.setTime(mMinCal.getTime());
+        int currentMonth = mWeekCounter.get(Calendar.MONTH);
+        int currentYear = mWeekCounter.get(Calendar.YEAR);
 
         for (IWeekItem weekItem : getWeeks()) {
             for (IDayItem dayItem : weekItem.getDayItems()) {
                 IWeightItem item = new WeightItem();
+                item = map.get(sdf1.format(dayItem.getDate()));
+
+                if (item == null) {
+                    item = new WeightItem();
+                }
+
                 item.setDate(dayItem.getDate());
-                mWeights.add(item);
+                currentMonth = dayItem.getDate().getMonth();
+
+                if ((currentMonth == maxMonth // Up to, including the month.
+                        || currentYear < maxYear) // Up to the year.
+                        && currentYear == maxYear) { // But not > next yr.
+                    mWeights.add(item);
+                }
+
+//                currentMonth = mWeekCounter.get(Calendar.MONTH);
+                currentYear = mWeekCounter.get(Calendar.YEAR);
             }
         }
     }

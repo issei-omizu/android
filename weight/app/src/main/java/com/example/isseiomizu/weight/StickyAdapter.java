@@ -58,9 +58,9 @@ public class StickyAdapter extends ArrayAdapter<IWeightItem> implements StickyLi
 
         Calendar cal = Calendar.getInstance();
         cal.setTime(mWeights.get(i).getDate());
-        cal.add(Calendar.MONTH, 1);
+//        cal.add(Calendar.MONTH, 1);
 
-        holder.textView.setText(cal.get(Calendar.YEAR) + "/" + cal.get(Calendar.MONTH));
+        holder.textView.setText(cal.get(Calendar.YEAR) + "/" + (cal.get(Calendar.MONTH) + 1));
 
         return view;
     }
@@ -79,8 +79,9 @@ public class StickyAdapter extends ArrayAdapter<IWeightItem> implements StickyLi
     public int getHeaderItem(int position) {
         Calendar cal = Calendar.getInstance();
         cal.setTime(mWeights.get(position).getDate());
-        cal.add(Calendar.MONTH, 1);
-        String lastMonth = new SimpleDateFormat( "yyyyMM" ).format( cal.getTime() );
+//        cal.add(Calendar.MONTH, 1);
+        String lastMonth = String.format("%04d%02d", cal.get(Calendar.YEAR), cal.get(Calendar.MONTH));
+//        String lastMonth = new SimpleDateFormat( "yyyyMM" ).format( cal.getTime() );
 
         int yearMonth = Integer.parseInt(lastMonth);
 
@@ -102,8 +103,12 @@ public class StickyAdapter extends ArrayAdapter<IWeightItem> implements StickyLi
             holder = (ItemViewHolder) convertView.getTag();
         }
 
+        SimpleDateFormat sdf1 = new SimpleDateFormat("d");
+
         // Adapterに渡されたテキストを入れます
-        holder.textView.setText(getItem(position).getDate().toString());
+        holder.textView.setText(sdf1.format(getItem(position).getDate()));
+        holder.itemRowWeight.setText(getItem(position).getWeight());
+        holder.itemRowBodyFatPercentage.setText(getItem(position).getBodyFatPercentage());
 
         return convertView;
     }
@@ -119,10 +124,15 @@ public class StickyAdapter extends ArrayAdapter<IWeightItem> implements StickyLi
 
     public static class ItemViewHolder {
         TextView textView;
+        TextView itemRowWeight;
+        TextView itemRowBodyFatPercentage;
 
         // コンストラクタ内でidバインドを行なうとスッキリします
         public ItemViewHolder(View view) {
             textView = (TextView) view.findViewById(R.id.item_textview);
+            itemRowWeight = (TextView) view.findViewById(R.id.itemRowWeight);
+            itemRowBodyFatPercentage = (TextView) view.findViewById(R.id.itemRowBodyFatPercentage);
+
         }
     }
 }

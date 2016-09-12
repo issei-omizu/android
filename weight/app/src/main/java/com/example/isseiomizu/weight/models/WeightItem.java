@@ -11,6 +11,8 @@ import java.util.Date;
  */
 public class WeightItem implements IWeightItem {
     private Date mDate;
+    private String mWeight;
+    private String mBodyFatPercentage;
     private int mValue;
     private int mDayOfTheWeek;
     private boolean mToday;
@@ -51,6 +53,18 @@ public class WeightItem implements IWeightItem {
     public void setDate(Date date) {
         this.mDate = date;
     }
+
+    public String getWeight() { return mWeight; };
+
+    public void setWeight(String weight) {
+        this.mWeight = weight;
+    };
+
+    public String getBodyFatPercentage() { return mBodyFatPercentage; };
+
+    public void setBodyFatPercentage(String bodyFatPercentage) {
+        this.mBodyFatPercentage = bodyFatPercentage;
+    };
 
     public int getValue() {
         return mValue;

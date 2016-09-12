@@ -51,6 +51,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Calendar;
+import java.util.Date;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
@@ -165,40 +166,20 @@ public class MainActivity extends AppCompatActivity
         });
 
         final DatePicker datePicker = (DatePicker) findViewById(R.id.datePicker);
-        datePicker.init(2015, 12, 14, new DatePicker.OnDateChangedListener() {
+        Calendar cal = Calendar.getInstance();
+        int year = cal.get(Calendar.YEAR);
+        int month = cal.get(Calendar.MONTH);
+        int day = cal.get(Calendar.DAY_OF_MONTH);
+        mDate = String.format("%04d%02d%02d", year, month, day);
+
+        setInputData();
+
+        datePicker.init(year, month, day, new DatePicker.OnDateChangedListener() {
             @Override
             public void onDateChanged(DatePicker view, int year, int monthOfYear, int dayOfMonth) {
                 // 日付を選択した時に実行される
                 mDate = String.format("%04d%02d%02d", year, monthOfYear + 1, dayOfMonth);
-
-                List test = mapWeight.get(mDate);
-
-                editWeight.setText("");
-                editBodyFatPercentage.setText("");
-
-
-                // sqliteからデータ取得
-                Cursor c = mDbWeight.query("weight", new String[]{"date", "weight", "body_fat_percentage"}, "date = ?", new String[]{mDate}, null, null, "date DESC");
-
-                boolean mov = c.moveToFirst();
-
-                String weight = "";
-                String bodyFatPercentage = "";
-                if (mov) {
-                    weight = c.getString(1);
-                    bodyFatPercentage = c.getString(2);
-
-                    if (weight != null) {
-                        editWeight.setText(weight);
-                    }
-
-                    if (bodyFatPercentage != null) {
-                        editBodyFatPercentage.setText(bodyFatPercentage);
-                    }
-                }
-
-                c.close();
-
+                setInputData();
             }
         });
 
@@ -212,6 +193,36 @@ public class MainActivity extends AppCompatActivity
                 getApplicationContext(), Arrays.asList(SCOPES))
                 .setBackOff(new ExponentialBackOff());
 
+    }
+
+    private  void setInputData() {
+        List test = mapWeight.get(mDate);
+
+        editWeight.setText("");
+        editBodyFatPercentage.setText("");
+
+
+        // sqliteからデータ取得
+        Cursor c = mDbWeight.query("weight", new String[]{"date", "weight", "body_fat_percentage"}, "date = ?", new String[]{mDate}, null, null, "date DESC");
+
+        boolean mov = c.moveToFirst();
+
+        String weight = "";
+        String bodyFatPercentage = "";
+        if (mov) {
+            weight = c.getString(1);
+            bodyFatPercentage = c.getString(2);
+
+            if (weight != null) {
+                editWeight.setText(weight);
+            }
+
+            if (bodyFatPercentage != null) {
+                editBodyFatPercentage.setText(bodyFatPercentage);
+            }
+        }
+
+        c.close();
     }
 
     @Override
@@ -237,6 +248,7 @@ public class MainActivity extends AppCompatActivity
 
     public void startListCalendarActivity(View view) {
         Intent intent = new Intent(getApplication(), ListCalendarActivity.class);
+        intent.putExtra("date", mDate);
         startActivity(intent);
     }
 

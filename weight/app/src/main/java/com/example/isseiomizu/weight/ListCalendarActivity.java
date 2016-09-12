@@ -1,12 +1,18 @@
 package com.example.isseiomizu.weight;
 
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
+import java.util.Date;
 import java.util.List;
 import java.util.Locale;
 
+import android.content.Intent;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
+import android.graphics.Color;
+import android.support.v4.view.ViewPager;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.view.View;
@@ -28,26 +34,60 @@ public class ListCalendarActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_list_calendar);
 
-        // db
-        MyOpenHelper helper = new MyOpenHelper(this);
-        this.mDbWeight = helper.getWritableDatabase();
+        Intent intent = getIntent();
+        String paramSelectedDate = intent.getStringExtra("date");
 
-        // minimum and maximum date of our calendar
-        // 2 month behind, one year ahead, example: March 2015 <-> May 2015 <-> May 2016
-        Calendar minDate = Calendar.getInstance();
-        Calendar maxDate = Calendar.getInstance();
+        SimpleDateFormat sdf1 = new SimpleDateFormat("yyyyMMdd");
+        try {
+            Date selectedDate = sdf1.parse(paramSelectedDate);
 
-        minDate.add(Calendar.MONTH, -2);
-        minDate.set(Calendar.DAY_OF_MONTH, 1);
-        maxDate.add(Calendar.YEAR, 1);
+            // db
+            MyOpenHelper helper = new MyOpenHelper(this);
+            this.mDbWeight = helper.getWritableDatabase();
 
-        //////// This can be done once in another thread
-        CalendarManager calendarManager = CalendarManager.getInstance(getApplicationContext());
-        calendarManager.buildCal(minDate, maxDate, Locale.getDefault(), new DayItem(), new WeekItem());
-        calendarManager.loadWeights();
+            // minimum and maximum date of our calendar
+            // 2 month behind, one year ahead, example: March 2015 <-> May 2015 <-> May 2016
+            Calendar minDate = Calendar.getInstance();
+            Calendar maxDate = Calendar.getInstance();
 
-        mListView = (StickyListHeadersListView) findViewById(R.id.sticky_listview);
+            minDate.setTime(selectedDate);
+            maxDate.setTime(selectedDate);
 
+//            minDate.add(Calendar.MONTH, -1);
+            minDate.set(Calendar.DAY_OF_MONTH, 1);
+//            maxDate.add(Calendar.YEAR, 1);
+//            maxDate.add(Calendar.MONTH, 1);
+//            maxDate.set(Calendar.DAY_OF_MONTH, 1);
+
+            //////// This can be done once in another thread
+            CalendarManager calendarManager = CalendarManager.getInstance(getApplicationContext());
+            calendarManager.buildCal(minDate, maxDate, Locale.getDefault(), new DayItem(), new WeekItem());
+            calendarManager.loadWeights();
+
+            mListView = (StickyListHeadersListView) findViewById(R.id.sticky_listview);
+
+
+            // カスタム PagerAdapter を生成
+            CustomPagerAdapter adapter = new CustomPagerAdapter(this);
+            adapter.add(Color.BLACK);
+            adapter.add(Color.RED);
+            adapter.add(Color.GREEN);
+            adapter.add(Color.BLUE);
+            adapter.add(Color.CYAN);
+            adapter.add(Color.MAGENTA);
+            adapter.add(Color.YELLOW);
+
+            // ViewPager を生成
+            ViewPager viewPager = new ViewPager(this);
+            viewPager.setAdapter(adapter);
+
+
+            // レイアウトにセット
+            setContentView(viewPager);
+
+        } catch (ParseException e) {
+            //失敗時の処理…
+        }
     }
 
     @Override

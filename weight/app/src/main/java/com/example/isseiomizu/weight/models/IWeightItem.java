@@ -15,6 +15,14 @@ public interface IWeightItem {
 
     void setValue(int value);
 
+    String getWeight();
+
+    void setWeight(String weight);
+
+    String getBodyFatPercentage();
+
+    void setBodyFatPercentage(String bodyFatPercentage);
+
     boolean isToday();
 
     void setToday(boolean today);
