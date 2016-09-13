@@ -5,6 +5,8 @@ package com.example.isseiomizu.weight;
  */
 
 import java.util.ArrayList;
+import java.util.Calendar;
+import java.util.Locale;
 
 import android.content.Context;
 import android.support.v4.view.PagerAdapter;
@@ -13,6 +15,8 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.TextView;
 
+import com.example.isseiomizu.weight.models.DayItem;
+import com.example.isseiomizu.weight.models.WeekItem;
 import com.example.isseiomizu.weight.utils.BusProvider;
 import com.example.isseiomizu.weight.utils.Events;
 
@@ -27,7 +31,7 @@ public class CustomPagerAdapter extends PagerAdapter {
     private Context mContext;
 
     /** リスト. */
-    private ArrayList<Integer> mList;
+    private ArrayList<Calendar> mList;
 
     /** ポジション. */
     private int mPosition;
@@ -40,7 +44,7 @@ public class CustomPagerAdapter extends PagerAdapter {
      */
     public CustomPagerAdapter(Context context, StickyAdapter adapter) {
         mContext = context;
-        mList = new ArrayList<Integer>();
+        mList = new ArrayList<Calendar>();
         mStickyAdapter = adapter;
     }
 
@@ -48,7 +52,7 @@ public class CustomPagerAdapter extends PagerAdapter {
      * リストにアイテムを追加する.
      * @param item アイテム
      */
-    public void add(Integer item) {
+    public void add(Calendar item) {
         mList.add(item);
     }
 
@@ -58,31 +62,43 @@ public class CustomPagerAdapter extends PagerAdapter {
     public Object instantiateItem(ViewGroup container, int position) {
 
         // リストから取得
-        Integer item = mList.get(position);
+        Calendar item = mList.get(position);
 
-        // View を生成
-        TextView textView = new TextView(mContext);
-        textView.setText("Page:" + position);
-        textView.setTextSize(30);
-        textView.setTextColor(item);
-        textView.setGravity(Gravity.CENTER);
+//        Calendar minDate = Calendar.getInstance();
+//        Calendar maxDate = Calendar.getInstance();
+//
+//        minDate.setTime(item.getTime());
+//        maxDate.setTime(item.getTime());
+//
+//        minDate.set(Calendar.DAY_OF_MONTH, 1);
+//
+//        CalendarManager calendarManager = CalendarManager.getInstance(mContext);
+//        calendarManager.buildCal(minDate, maxDate, Locale.getDefault(), new DayItem(), new WeekItem());
+//        calendarManager.loadWeights();
+//
+
+//        // View を生成
+//        TextView textView = new TextView(mContext);
+//        textView.setText("Page:" + position);
+//        textView.setTextSize(30);
+//        textView.setTextColor(item);
+//        textView.setGravity(Gravity.CENTER);
 
         StickyAdapter adapter = new StickyAdapter(mContext, android.R.layout.simple_list_item_1, CalendarManager.getInstance().getWeights());
 
         StickyListHeadersListView stickyListHeadersListView = new StickyListHeadersListView(mContext);
         stickyListHeadersListView.setAdapter(adapter);
 
-
         // コンテナに追加
 //        container.addView(textView);
         container.addView(stickyListHeadersListView);
 
-        if (position > 0) {
-            if (mPosition < position) {
-                BusProvider.getInstance().send(new Events.EventsNext());
-            } else {
-                BusProvider.getInstance().send(new Events.EventsPrevious());
-            }
+        if (position == 0) {
+            BusProvider.getInstance().send(new Events.EventsPrevious());
+        } else if (position == 1) {
+            BusProvider.getInstance().send(new Events.EventsCurrent());
+        } else if (position == 2) {
+            BusProvider.getInstance().send(new Events.EventsNext());
         }
 
         mPosition = position;

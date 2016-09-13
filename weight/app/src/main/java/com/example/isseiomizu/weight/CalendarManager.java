@@ -222,6 +222,22 @@ public class CalendarManager {
 
     }
 
+    public void loadCal(Calendar calendar) {
+        Calendar minDate = Calendar.getInstance();
+        Calendar maxDate = Calendar.getInstance();
+
+        minDate.setTime(mMinCal.getTime());
+        maxDate.setTime(mMaxCal.getTime());
+
+        minDate.add(Calendar.MONTH, -1);
+        maxDate.add(Calendar.MONTH, -1);
+
+        buildCal(minDate, maxDate, Locale.getDefault(), new DayItem(), new WeekItem());
+
+        loadWeights();
+
+    }
+
     public void loadNext() {
         Calendar minDate = Calendar.getInstance();
         Calendar maxDate = Calendar.getInstance();

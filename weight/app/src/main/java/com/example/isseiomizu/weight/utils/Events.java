@@ -44,6 +44,9 @@ public class Events {
     public static class EventsPrevious {
     }
 
+    public static class EventsCurrent {
+    }
+
     public static class ForecastFetched {
     }
 }
