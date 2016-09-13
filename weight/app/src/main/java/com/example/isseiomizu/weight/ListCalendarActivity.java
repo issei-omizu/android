@@ -1,5 +1,8 @@
 package com.example.isseiomizu.weight;
 
+import com.example.isseiomizu.weight.utils.BusProvider;
+import com.example.isseiomizu.weight.utils.Events;
+
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -8,10 +11,13 @@ import java.util.Date;
 import java.util.List;
 import java.util.Locale;
 
+import android.animation.Animator;
+import android.animation.ObjectAnimator;
 import android.content.Intent;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.graphics.Color;
+import android.os.Handler;
 import android.support.v4.view.ViewPager;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
@@ -26,6 +32,10 @@ import se.emilsjolander.stickylistheaders.StickyListHeadersListView;
 public class ListCalendarActivity extends AppCompatActivity {
 
     private StickyListHeadersListView mListView;
+    private ViewPager mViewPager;
+    private CalendarPickerController mCalendarPickerController;
+
+    private StickyAdapter mAdapter;
 
     private SQLiteDatabase mDbWeight;
 
@@ -64,26 +74,10 @@ public class ListCalendarActivity extends AppCompatActivity {
             calendarManager.buildCal(minDate, maxDate, Locale.getDefault(), new DayItem(), new WeekItem());
             calendarManager.loadWeights();
 
-            mListView = (StickyListHeadersListView) findViewById(R.id.sticky_listview);
-
-
-            // カスタム PagerAdapter を生成
-            CustomPagerAdapter adapter = new CustomPagerAdapter(this);
-            adapter.add(Color.BLACK);
-            adapter.add(Color.RED);
-            adapter.add(Color.GREEN);
-            adapter.add(Color.BLUE);
-            adapter.add(Color.CYAN);
-            adapter.add(Color.MAGENTA);
-            adapter.add(Color.YELLOW);
+//            mListView = (StickyListHeadersListView) findViewById(R.id.sticky_listview);
 
             // ViewPager を生成
-            ViewPager viewPager = new ViewPager(this);
-            viewPager.setAdapter(adapter);
-
-
-            // レイアウトにセット
-            setContentView(viewPager);
+            mViewPager = (ViewPager) findViewById(R.id.view_pager);
 
         } catch (ParseException e) {
             //失敗時の処理…
@@ -94,10 +88,40 @@ public class ListCalendarActivity extends AppCompatActivity {
     protected void onResume() {
         super.onResume();
 
-//        StickyAdapter adapter = new StickyAdapter(this, android.R.layout.simple_list_item_1, createSampleArray());
-        StickyAdapter adapter = new StickyAdapter(this, android.R.layout.simple_list_item_1, CalendarManager.getInstance().getWeights());
-        mListView.setAdapter(adapter);
+////        StickyAdapter adapter = new StickyAdapter(this, android.R.layout.simple_list_item_1, createSampleArray());
+        mAdapter = new StickyAdapter(this, android.R.layout.simple_list_item_1, CalendarManager.getInstance().getWeights());
+//        mListView.setAdapter(adapter);
+
+        // カスタム PagerAdapter を生成
+        CustomPagerAdapter customPagerAdapter = new CustomPagerAdapter(this, mAdapter);
+        customPagerAdapter.add(Color.BLACK);
+        customPagerAdapter.add(Color.RED);
+        customPagerAdapter.add(Color.GREEN);
+//        customPagerAdapter.add(Color.BLUE);
+//        customPagerAdapter.add(Color.CYAN);
+//        customPagerAdapter.add(Color.MAGENTA);
+//        customPagerAdapter.add(Color.YELLOW);
+
+        mViewPager.setAdapter(customPagerAdapter);
+
+
+        BusProvider.getInstance().toObserverable()
+                .subscribe(event -> {
+                    if (event instanceof Events.DayClickedEvent) {
+                        String test = "";
+                        mCalendarPickerController.onDaySelected(((Events.DayClickedEvent) event).getDay());
+                    } else if (event instanceof Events.EventsNext) {
+                        CalendarManager calendarManager = CalendarManager.getInstance(getApplicationContext());
+                        calendarManager.loadNext();
+                        mAdapter.notifyDataSetChanged();
+                    } else if (event instanceof Events.EventsPrevious) {
+                        CalendarManager calendarManager = CalendarManager.getInstance(getApplicationContext());
+                        calendarManager.loadPrevious();
+                        mAdapter.notifyDataSetChanged();
+                    }
+                });
     }
+
 
     @Override
     protected void onDestroy() {

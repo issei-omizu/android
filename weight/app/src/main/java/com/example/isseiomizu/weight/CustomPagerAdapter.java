@@ -13,6 +13,11 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.TextView;
 
+import com.example.isseiomizu.weight.utils.BusProvider;
+import com.example.isseiomizu.weight.utils.Events;
+
+import se.emilsjolander.stickylistheaders.StickyListHeadersListView;
+
 /**
  * カスタム PagerAdapter クラス.
  */
@@ -24,12 +29,19 @@ public class CustomPagerAdapter extends PagerAdapter {
     /** リスト. */
     private ArrayList<Integer> mList;
 
+    /** ポジション. */
+    private int mPosition;
+
+    private StickyListHeadersListView mListView;
+    private StickyAdapter mStickyAdapter;
+
     /**
      * コンストラクタ.
      */
-    public CustomPagerAdapter(Context context) {
+    public CustomPagerAdapter(Context context, StickyAdapter adapter) {
         mContext = context;
         mList = new ArrayList<Integer>();
+        mStickyAdapter = adapter;
     }
 
     /**
@@ -39,6 +51,8 @@ public class CustomPagerAdapter extends PagerAdapter {
     public void add(Integer item) {
         mList.add(item);
     }
+
+    public int getPosition() { return mPosition; }
 
     @Override
     public Object instantiateItem(ViewGroup container, int position) {
@@ -53,10 +67,27 @@ public class CustomPagerAdapter extends PagerAdapter {
         textView.setTextColor(item);
         textView.setGravity(Gravity.CENTER);
 
-        // コンテナに追加
-        container.addView(textView);
+        StickyAdapter adapter = new StickyAdapter(mContext, android.R.layout.simple_list_item_1, CalendarManager.getInstance().getWeights());
 
-        return textView;
+        StickyListHeadersListView stickyListHeadersListView = new StickyListHeadersListView(mContext);
+        stickyListHeadersListView.setAdapter(adapter);
+
+
+        // コンテナに追加
+//        container.addView(textView);
+        container.addView(stickyListHeadersListView);
+
+        if (position > 0) {
+            if (mPosition < position) {
+                BusProvider.getInstance().send(new Events.EventsNext());
+            } else {
+                BusProvider.getInstance().send(new Events.EventsPrevious());
+            }
+        }
+
+        mPosition = position;
+
+        return stickyListHeadersListView;
     }
 
     @Override
@@ -72,9 +103,15 @@ public class CustomPagerAdapter extends PagerAdapter {
     }
 
     @Override
+    public int getItemPosition(Object object) {
+        return mPosition;
+    }
+
+    @Override
     public boolean isViewFromObject(View view, Object object) {
         // Object 内に View が存在するか判定する
-        return view == (TextView) object;
+//        return view == (TextView) object;
+        return view == (StickyListHeadersListView) object;
     }
 
 }

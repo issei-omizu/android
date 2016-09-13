@@ -1,9 +1,11 @@
 package com.example.isseiomizu.weight;
 
+import com.example.isseiomizu.weight.models.DayItem;
 import com.example.isseiomizu.weight.models.IDayItem;
 import com.example.isseiomizu.weight.models.IWeekItem;
 import com.example.isseiomizu.weight.models.CalendarEvent;
 import com.example.isseiomizu.weight.models.IWeightItem;
+import com.example.isseiomizu.weight.models.WeekItem;
 import com.example.isseiomizu.weight.models.WeightItem;
 import com.example.isseiomizu.weight.utils.DateHelper;
 
@@ -202,6 +204,37 @@ public class CalendarManager {
             currentMonth = mWeekCounter.get(Calendar.MONTH);
             currentYear = mWeekCounter.get(Calendar.YEAR);
         }
+    }
+
+    public void loadPrevious() {
+        Calendar minDate = Calendar.getInstance();
+        Calendar maxDate = Calendar.getInstance();
+
+        minDate.setTime(mMinCal.getTime());
+        maxDate.setTime(mMaxCal.getTime());
+
+        minDate.add(Calendar.MONTH, -1);
+        maxDate.add(Calendar.MONTH, -1);
+
+        buildCal(minDate, maxDate, Locale.getDefault(), new DayItem(), new WeekItem());
+
+        loadWeights();
+
+    }
+
+    public void loadNext() {
+        Calendar minDate = Calendar.getInstance();
+        Calendar maxDate = Calendar.getInstance();
+
+        minDate.setTime(mMinCal.getTime());
+        maxDate.setTime(mMaxCal.getTime());
+
+        minDate.add(Calendar.MONTH, 1);
+        maxDate.add(Calendar.MONTH, 1);
+
+        buildCal(minDate, maxDate, Locale.getDefault(), new DayItem(), new WeekItem());
+
+        loadWeights();
     }
 
     public void loadWeights() {
