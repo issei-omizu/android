@@ -135,21 +135,30 @@ public class ListCalendarActivity extends AppCompatActivity {
                     if (event instanceof Events.DayClickedEvent) {
                         String test = "";
                         mCalendarPickerController.onDaySelected(((Events.DayClickedEvent) event).getDay());
+                    } else if (event instanceof Events.EventsFetched) {
+                        CalendarManager calendarManager = CalendarManager.getInstance(getApplicationContext());
+//                        calendarManager.loadPrevious();
+                        calendarManager.loadCal(((Events.EventsFetched) event).getCalendar());
+                        mAdapter.notifyDataSetChanged();
+                        mViewPager.setCurrentItem(1);
                     } else if (event instanceof Events.EventsPrevious) {
                         CalendarManager calendarManager = CalendarManager.getInstance(getApplicationContext());
 //                        calendarManager.loadPrevious();
                         calendarManager.loadCal(mPreviousDate);
                         mAdapter.notifyDataSetChanged();
+                        mViewPager.setCurrentItem(1);
                     } else if (event instanceof Events.EventsCurrent) {
                         CalendarManager calendarManager = CalendarManager.getInstance(getApplicationContext());
 //                        calendarManager.loadNext();
                         calendarManager.loadCal(mCurrentDate);
                         mAdapter.notifyDataSetChanged();
+                        mViewPager.setCurrentItem(1);
                     } else if (event instanceof Events.EventsNext) {
                         CalendarManager calendarManager = CalendarManager.getInstance(getApplicationContext());
 //                        calendarManager.loadNext();
                         calendarManager.loadCal(mNextDate);
                         mAdapter.notifyDataSetChanged();
+                        mViewPager.setCurrentItem(1);
                     }
                 });
     }

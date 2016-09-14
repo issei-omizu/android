@@ -2,6 +2,7 @@ package com.example.isseiomizu.weight.utils;
 
 import com.example.isseiomizu.weight.models.IDayItem;
 
+import java.sql.Date;
 import java.util.Calendar;
 
 /**
@@ -36,6 +37,17 @@ public class Events {
     }
 
     public static class EventsFetched {
+        public Calendar mCalendar;
+
+        public EventsFetched(Calendar calendar) {
+            this.mCalendar = Calendar.getInstance();
+            this.mCalendar.setTime(calendar.getTime());
+        }
+
+        public Calendar getCalendar() {
+            return mCalendar;
+        }
+
     }
 
     public static class EventsNext {

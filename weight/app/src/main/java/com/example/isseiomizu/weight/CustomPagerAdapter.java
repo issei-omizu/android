@@ -89,19 +89,27 @@ public class CustomPagerAdapter extends PagerAdapter {
         StickyListHeadersListView stickyListHeadersListView = new StickyListHeadersListView(mContext);
         stickyListHeadersListView.setAdapter(adapter);
 
-        // コンテナに追加
+        // 3つViewがあっtら全て描画済みとする。
+        if (container.getChildCount() == 3) {
+            // コンテナに追加
 //        container.addView(textView);
-        container.addView(stickyListHeadersListView);
+            // 消す → 追加！！
 
-        if (position == 0) {
-            BusProvider.getInstance().send(new Events.EventsPrevious());
-        } else if (position == 1) {
-            BusProvider.getInstance().send(new Events.EventsCurrent());
-        } else if (position == 2) {
-            BusProvider.getInstance().send(new Events.EventsNext());
+//            if (position == 0) {
+//                BusProvider.getInstance().send(new Events.EventsPrevious());
+//            } else if (position == 1) {
+//                BusProvider.getInstance().send(new Events.EventsCurrent());
+//            } else if (position == 2) {
+//                BusProvider.getInstance().send(new Events.EventsNext());
+//            }
+//            mPosition = position;
+            container.addView(stickyListHeadersListView);
+            BusProvider.getInstance().send(new Events.EventsFetched(item));
+        } else {
+            container.addView(stickyListHeadersListView);
+            BusProvider.getInstance().send(new Events.EventsFetched(item));
         }
 
-        mPosition = position;
 
         return stickyListHeadersListView;
     }

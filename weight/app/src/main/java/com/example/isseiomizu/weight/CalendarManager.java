@@ -168,7 +168,7 @@ public class CalendarManager {
 
         // maxDate is exclusive, here we bump back to the previous day, as maxDate if December 1st, 2020,
         // we don't include that month in our list
-        mMaxCal.add(Calendar.MINUTE, -1);
+//        mMaxCal.add(Calendar.MINUTE, -1);
 
         // Now iterate we iterate between mMinCal and mMaxCal so we build our list of weeks
         mWeekCounter.setTime(mMinCal.getTime());
@@ -226,14 +226,12 @@ public class CalendarManager {
         Calendar minDate = Calendar.getInstance();
         Calendar maxDate = Calendar.getInstance();
 
-        minDate.setTime(mMinCal.getTime());
-        maxDate.setTime(mMaxCal.getTime());
+        minDate.setTime(calendar.getTime());
+        maxDate.setTime(calendar.getTime());
 
-        minDate.add(Calendar.MONTH, -1);
-        maxDate.add(Calendar.MONTH, -1);
+        minDate.set(Calendar.DAY_OF_MONTH, 1);
 
         buildCal(minDate, maxDate, Locale.getDefault(), new DayItem(), new WeekItem());
-
         loadWeights();
 
     }
