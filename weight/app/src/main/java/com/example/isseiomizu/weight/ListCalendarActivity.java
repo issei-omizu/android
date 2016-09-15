@@ -34,11 +34,14 @@ public class ListCalendarActivity extends AppCompatActivity {
     private StickyListHeadersListView mListView;
     private ViewPager mViewPager;
     private CalendarPickerController mCalendarPickerController;
+    private CustomPagerAdapter mCustomPagerAdapter;
 
     private Date mSelectedDate;
+    private Calendar mPreviousDate2 = Calendar.getInstance();
     private Calendar mPreviousDate = Calendar.getInstance();
     private Calendar mCurrentDate = Calendar.getInstance();
     private Calendar mNextDate = Calendar.getInstance();
+    private Calendar mNextDate2 = Calendar.getInstance();
 
     private StickyAdapter mAdapter;
 
@@ -98,11 +101,17 @@ public class ListCalendarActivity extends AppCompatActivity {
 //        mListView.setAdapter(adapter);
 
         // カスタム PagerAdapter を生成
-        CustomPagerAdapter customPagerAdapter = new CustomPagerAdapter(this, mAdapter);
+        mCustomPagerAdapter = new CustomPagerAdapter(this, mAdapter);
 
+        mPreviousDate2 = Calendar.getInstance();
         mPreviousDate = Calendar.getInstance();
         mCurrentDate = Calendar.getInstance();
         mNextDate = Calendar.getInstance();
+        mNextDate2 = Calendar.getInstance();
+
+        mPreviousDate2.setTime(mSelectedDate);
+        mPreviousDate2.add(Calendar.MONTH, -2);
+        mPreviousDate2.set(Calendar.DAY_OF_MONTH, 1);
 
         mPreviousDate.setTime(mSelectedDate);
         mPreviousDate.add(Calendar.MONTH, -1);
@@ -116,18 +125,25 @@ public class ListCalendarActivity extends AppCompatActivity {
         mNextDate.add(Calendar.MONTH, 1);
         mNextDate.set(Calendar.DAY_OF_MONTH, 1);
 
+        mNextDate2.setTime(mSelectedDate);
+        mNextDate2.add(Calendar.MONTH, 2);
+        mNextDate2.set(Calendar.DAY_OF_MONTH, 1);
 
 
 
-        customPagerAdapter.add(mPreviousDate);
-        customPagerAdapter.add(mCurrentDate);
-        customPagerAdapter.add(mNextDate);
+
+        mCustomPagerAdapter.add(mPreviousDate2);
+        mCustomPagerAdapter.add(mPreviousDate);
+        mCustomPagerAdapter.add(mCurrentDate);
+        mCustomPagerAdapter.add(mNextDate);
+        mCustomPagerAdapter.add(mNextDate2);
 //        customPagerAdapter.add(Color.BLUE);
 //        customPagerAdapter.add(Color.CYAN);
 //        customPagerAdapter.add(Color.MAGENTA);
 //        customPagerAdapter.add(Color.YELLOW);
 
-        mViewPager.setAdapter(customPagerAdapter);
+        mViewPager.setAdapter(mCustomPagerAdapter);
+        mViewPager.setCurrentItem(2);
 
 
         BusProvider.getInstance().toObserverable()
@@ -136,17 +152,31 @@ public class ListCalendarActivity extends AppCompatActivity {
                         String test = "";
                         mCalendarPickerController.onDaySelected(((Events.DayClickedEvent) event).getDay());
                     } else if (event instanceof Events.EventsFetched) {
-                        CalendarManager calendarManager = CalendarManager.getInstance(getApplicationContext());
-//                        calendarManager.loadPrevious();
-                        calendarManager.loadCal(((Events.EventsFetched) event).getCalendar());
-                        mAdapter.notifyDataSetChanged();
-                        mViewPager.setCurrentItem(1);
+//                        CalendarManager calendarManager = CalendarManager.getInstance(getApplicationContext());
+////                        calendarManager.loadPrevious();
+//                        calendarManager.loadCal(((Events.EventsFetched) event).getCalendar());
+//                        mAdapter.notifyDataSetChanged();
+                        mViewPager.setCurrentItem(2);
                     } else if (event instanceof Events.EventsPrevious) {
-                        CalendarManager calendarManager = CalendarManager.getInstance(getApplicationContext());
-//                        calendarManager.loadPrevious();
-                        calendarManager.loadCal(mPreviousDate);
-                        mAdapter.notifyDataSetChanged();
-                        mViewPager.setCurrentItem(1);
+//                        CalendarManager calendarManager = CalendarManager.getInstance(getApplicationContext());
+////                        calendarManager.loadPrevious();
+//                        calendarManager.loadCal(mPreviousDate);
+//                        mAdapter.notifyDataSetChanged();
+////                        mViewPager.setCurrentItem(1);
+                        mPreviousDate.add(Calendar.MONTH, -1);
+                        mPreviousDate.set(Calendar.DAY_OF_MONTH, 1);
+
+                        mCurrentDate.add(Calendar.MONTH, -1);
+                        mCurrentDate.set(Calendar.DAY_OF_MONTH, 1);
+
+                        mNextDate.add(Calendar.MONTH, -11);
+                        mNextDate.set(Calendar.DAY_OF_MONTH, 1);
+
+                        mViewPager.removeAllViews();
+                        mCustomPagerAdapter.add(mPreviousDate);
+                        mCustomPagerAdapter.add(mCurrentDate);
+                        mCustomPagerAdapter.add(mNextDate);
+                        mCustomPagerAdapter.notifyDataSetChanged();
                     } else if (event instanceof Events.EventsCurrent) {
                         CalendarManager calendarManager = CalendarManager.getInstance(getApplicationContext());
 //                        calendarManager.loadNext();
@@ -154,11 +184,26 @@ public class ListCalendarActivity extends AppCompatActivity {
                         mAdapter.notifyDataSetChanged();
                         mViewPager.setCurrentItem(1);
                     } else if (event instanceof Events.EventsNext) {
-                        CalendarManager calendarManager = CalendarManager.getInstance(getApplicationContext());
-//                        calendarManager.loadNext();
-                        calendarManager.loadCal(mNextDate);
-                        mAdapter.notifyDataSetChanged();
-                        mViewPager.setCurrentItem(1);
+//                        CalendarManager calendarManager = CalendarManager.getInstance(getApplicationContext());
+////                        calendarManager.loadNext();
+//                        calendarManager.loadCal(mNextDate);
+//                        mAdapter.notifyDataSetChanged();
+////                        mViewPager.setCurrentItem(1);
+
+                        mPreviousDate.add(Calendar.MONTH, 1);
+                        mPreviousDate.set(Calendar.DAY_OF_MONTH, 1);
+
+                        mCurrentDate.add(Calendar.MONTH, 1);
+                        mCurrentDate.set(Calendar.DAY_OF_MONTH, 1);
+
+                        mNextDate.add(Calendar.MONTH, 1);
+                        mNextDate.set(Calendar.DAY_OF_MONTH, 1);
+
+                        mViewPager.removeAllViews();
+                        mCustomPagerAdapter.add(mPreviousDate);
+                        mCustomPagerAdapter.add(mCurrentDate);
+                        mCustomPagerAdapter.add(mNextDate);
+                        mCustomPagerAdapter.notifyDataSetChanged();
                     }
                 });
     }
