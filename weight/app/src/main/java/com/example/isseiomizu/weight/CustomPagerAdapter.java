@@ -52,11 +52,42 @@ public class CustomPagerAdapter extends PagerAdapter {
     }
 
     /**
-     * リストにアイテムを追加する.
+     * カレンダーリストにアイテムを追加する.
      * @param item アイテム
      */
     public void add(Calendar item) {
         mList.add(item);
+    }
+
+    /**
+     * カレンダーリストからアイテムを取得する.
+     * @return  カレンダーアイテム
+     */
+    public Calendar getItem(int position) {
+        return mList.get(position);
+    }
+
+    /**
+     * リストを取得する.
+     * @return カレンダーリスト
+     */
+    public ArrayList<Calendar> getList() {
+        return mList;
+    }
+
+    /**
+     * カレンダーリストをセットする.
+     * @param list カレンダーリスト
+     */
+    public void setList(ArrayList<Calendar> list) {
+        mList.addAll(list);
+    }
+
+    /**
+     * カレンダーリストをクリアする.
+     */
+    public void clearList() {
+        mList.removeAll(mList);
     }
 
     public int getPosition() { return mPosition; }
@@ -69,122 +100,38 @@ public class CustomPagerAdapter extends PagerAdapter {
 
 
 
-//        // View を生成
-//        TextView textView = new TextView(mContext);
-//        textView.setText("Page:" + position);
-//        textView.setTextSize(30);
+        // View を生成
+        TextView textView = new TextView(mContext);
+        textView.setText("Page:" + position + " " + item.getTime().toString());
+        textView.setTextSize(30);
 //        textView.setTextColor(item);
-//        textView.setGravity(Gravity.CENTER);
+        textView.setGravity(Gravity.CENTER);
+        container.addView(textView);
 
-        // 3つViewがあっtら全て描画済みとする。
-//        if (container.getChildCount() == 3) {
-            // コンテナに追加
-//        container.addView(textView);
-            // 消す → 追加！！
+        return textView;
 
-//            if (position == 0) {
-//                BusProvider.getInstance().send(new Events.EventsPrevious());
-//            } else if (position == 1) {
-//                BusProvider.getInstance().send(new Events.EventsCurrent());
-//            } else if (position == 2) {
-//                BusProvider.getInstance().send(new Events.EventsNext());
-//            }
-//            mPosition = position;
 
-//            container.addView(stickyListHeadersListView);
-//            BusProvider.getInstance().send(new Events.EventsFetched(item));
+//        StickyListHeadersListView stickyListHeadersListView = new StickyListHeadersListView(mContext);
 //
-//            if (item.getTimeInMillis() > mCalendar.getTimeInMillis()) {
-//                BusProvider.getInstance().send(new Events.EventsNext());
-//            } else if (item.getTimeInMillis() < mCalendar.getTimeInMillis()) {
-//                BusProvider.getInstance().send(new Events.EventsPrevious());
-//            } else {
-//                BusProvider.getInstance().send(new Events.EventsCurrent());
-//            }
+//        Calendar minDate = Calendar.getInstance();
+//        Calendar maxDate = Calendar.getInstance();
+//        minDate.setTime(item.getTime());
+//        maxDate.setTime(item.getTime());
+//        minDate.set(Calendar.DAY_OF_MONTH, 1);
 //
-//            mCalendar = item;
+//        CalendarManager calendarManager = CalendarManager.getInstance(mContext);
 //
-//        } else {
-//            container.addView(stickyListHeadersListView);
-//            BusProvider.getInstance().send(new Events.EventsFetched(item));
-//        }
-
-
-//        BusProvider.getInstance().send(new Events.EventsFetched(item));
-
-        StickyListHeadersListView stickyListHeadersListView = new StickyListHeadersListView(mContext);
-
-        Calendar minDate = Calendar.getInstance();
-        Calendar maxDate = Calendar.getInstance();
-        minDate.setTime(item.getTime());
-        maxDate.setTime(item.getTime());
-        minDate.set(Calendar.DAY_OF_MONTH, 1);
-
-        CalendarManager calendarManager = CalendarManager.getInstance(mContext);
-
-
-        // 2つViewがあったら全て描画済みとする。
-        if (mPosition != 0) {
-//            if (position < 2) {
-//                minDate.add(Calendar.MONTH, -1);
-//                maxDate.add(Calendar.MONTH, -1);
+//        calendarManager.buildCal(minDate, maxDate, Locale.getDefault(), new DayItem(), new WeekItem());
+//        calendarManager.loadWeights();
 //
-//                calendarManager.buildCal(minDate, maxDate, Locale.getDefault(), new DayItem(), new WeekItem());
-//                calendarManager.loadWeights();
+//        StickyAdapter adapter = new StickyAdapter(mContext, android.R.layout.simple_list_item_1, CalendarManager.getInstance().getWeights());
+//        stickyListHeadersListView.setAdapter(adapter);
 //
-//                StickyAdapter adapter = new StickyAdapter(mContext, android.R.layout.simple_list_item_1, CalendarManager.getInstance().getWeights());
-//                stickyListHeadersListView.setAdapter(adapter);
+//        container.addView(stickyListHeadersListView);
 //
-//                mList.remove(mList.size() - 1);
-//                mList.add(0, minDate);
+////        BusProvider.getInstance().send(new Events.EventsFetched(item));
 //
-//                mPosition = 0;
-//                container.removeAllViews();
-//                notifyDataSetChanged();
-//            } else if (position > 2) {
-//                minDate.add(Calendar.MONTH, 1);
-//                maxDate.add(Calendar.MONTH, 1);
-//
-//                calendarManager.buildCal(minDate, maxDate, Locale.getDefault(), new DayItem(), new WeekItem());
-//                calendarManager.loadWeights();
-//
-//                StickyAdapter adapter = new StickyAdapter(mContext, android.R.layout.simple_list_item_1, CalendarManager.getInstance().getWeights());
-//                stickyListHeadersListView.setAdapter(adapter);
-//
-//
-//                mList.remove(0);
-//                mList.add(minDate);
-//
-//                mPosition = 0;
-//                container.removeAllViews();
-//                notifyDataSetChanged();
-//            }
-        } else {
-//            calendarManager.buildCal(minDate, maxDate, Locale.getDefault(), new DayItem(), new WeekItem());
-//            calendarManager.loadWeights();
-//
-//            StickyAdapter adapter = new StickyAdapter(mContext, android.R.layout.simple_list_item_1, CalendarManager.getInstance().getWeights());
-//            stickyListHeadersListView.setAdapter(adapter);
-//
-//            container.addView(stickyListHeadersListView);
-//            if (container.getChildCount() == 2) {
-//                BusProvider.getInstance().send(new Events.EventsFetched(item));
-//            } else if (container.getChildCount() == 3) {
-////                mPosition = 3;
-//            }
-        }
-
-        calendarManager.buildCal(minDate, maxDate, Locale.getDefault(), new DayItem(), new WeekItem());
-        calendarManager.loadWeights();
-
-        StickyAdapter adapter = new StickyAdapter(mContext, android.R.layout.simple_list_item_1, CalendarManager.getInstance().getWeights());
-        stickyListHeadersListView.setAdapter(adapter);
-
-        container.addView(stickyListHeadersListView);
-
-//        BusProvider.getInstance().send(new Events.EventsFetched(item));
-
-        return stickyListHeadersListView;
+//        return stickyListHeadersListView;
     }
 
     @Override
@@ -200,15 +147,18 @@ public class CustomPagerAdapter extends PagerAdapter {
     }
 
     @Override
+//    public int getItemPosition(Object object) {
+//        return mPosition;
+//    }
     public int getItemPosition(Object object) {
-        return mPosition;
+        return POSITION_NONE;
     }
 
     @Override
     public boolean isViewFromObject(View view, Object object) {
         // Object 内に View が存在するか判定する
-//        return view == (TextView) object;
-        return view == (StickyListHeadersListView) object;
+        return view == (TextView) object;
+//        return view == (StickyListHeadersListView) object;
     }
 
 }

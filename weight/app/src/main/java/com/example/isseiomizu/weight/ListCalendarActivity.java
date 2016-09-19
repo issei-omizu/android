@@ -87,6 +87,59 @@ public class ListCalendarActivity extends AppCompatActivity {
             // ViewPager を生成
             mViewPager = (ViewPager) findViewById(R.id.view_pager);
 
+            mViewPager.setOnPageChangeListener(new ViewPager.OnPageChangeListener() {
+                @Override
+                public void onPageSelected(int position) {
+
+                }
+
+                @Override
+                public void onPageScrolled(int position, float positionOffset, int positionOffsetPixels) {
+
+                }
+
+                @Override
+                public void onPageScrollStateChanged(int state) {
+                    if (state == ViewPager.SCROLL_STATE_SETTLING) {
+                        int page = mViewPager.getCurrentItem();
+                        /**
+                         *  ここにしたい処理を書く。例えば、
+                         *  textView.setText(String.valueOf(page));
+                         *  という感じ
+                         */
+                        if (page == 0) {
+//                        mViewPager.removeViewAt(2);
+//                        ArrayList<Calendar> list = mCustomPagerAdapter.getList();
+//                        for (int i = 0; i < list.size(); i++) {
+//                            Calendar cal = list.get(i);
+//                            cal.add(Calendar.MONTH, -2);
+//                        }
+//                        mCustomPagerAdapter.notifyDataSetChanged();
+//                        mViewPager.setCurrentItem(1);
+                        } else if (page == 2) {
+                            ArrayList<Calendar> list = mCustomPagerAdapter.getList();
+                            ArrayList<Calendar> newList = new ArrayList<>();
+                            for (int i = 0; i < list.size(); i++) {
+//                                Calendar cal = Calendar.getInstance();
+//                                cal.setTime(list.get(i).getTime());
+//                                cal.add(Calendar.MONTH, 2);
+//
+//                                newList.add(cal);
+
+                                list.get(i).add(Calendar.MONTH, 2);
+                            }
+
+//                            mCustomPagerAdapter.clearList();
+//                            mCustomPagerAdapter.setList(newList);
+//                            mViewPager.removeAllViews();
+
+
+                            mCustomPagerAdapter.notifyDataSetChanged();
+                            mViewPager.setCurrentItem(1);
+                        }
+                    }
+                }
+            });
         } catch (ParseException e) {
             //失敗時の処理…
         }
@@ -132,18 +185,18 @@ public class ListCalendarActivity extends AppCompatActivity {
 
 
 
-        mCustomPagerAdapter.add(mPreviousDate2);
+//        mCustomPagerAdapter.add(mPreviousDate2);
         mCustomPagerAdapter.add(mPreviousDate);
         mCustomPagerAdapter.add(mCurrentDate);
         mCustomPagerAdapter.add(mNextDate);
-        mCustomPagerAdapter.add(mNextDate2);
+//        mCustomPagerAdapter.add(mNextDate2);
 //        customPagerAdapter.add(Color.BLUE);
 //        customPagerAdapter.add(Color.CYAN);
 //        customPagerAdapter.add(Color.MAGENTA);
 //        customPagerAdapter.add(Color.YELLOW);
 
         mViewPager.setAdapter(mCustomPagerAdapter);
-        mViewPager.setCurrentItem(2);
+        mViewPager.setCurrentItem(1);
 
 
         BusProvider.getInstance().toObserverable()
