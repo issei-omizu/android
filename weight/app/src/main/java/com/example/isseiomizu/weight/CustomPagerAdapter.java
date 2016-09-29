@@ -108,6 +108,8 @@ public class CustomPagerAdapter extends PagerAdapter {
         textView.setGravity(Gravity.CENTER);
         container.addView(textView);
 
+//        BusProvider.getInstance().send(new Events.EventsFetched(item));
+
         return textView;
 
 

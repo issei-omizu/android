@@ -13,6 +13,7 @@ import java.util.Locale;
 
 import android.animation.Animator;
 import android.animation.ObjectAnimator;
+import android.content.Context;
 import android.content.Intent;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
@@ -21,13 +22,25 @@ import android.os.Handler;
 import android.support.v4.view.ViewPager;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.view.Gravity;
+import android.view.LayoutInflater;
 import android.view.View;
+import android.view.ViewGroup;
+import android.widget.FrameLayout;
+import android.widget.LinearLayout;
+import android.widget.TextView;
 
 import com.example.isseiomizu.weight.models.DayItem;
 import com.example.isseiomizu.weight.models.WeekItem;
+import com.nakama.arraypageradapter.ArrayPagerAdapter;
+import com.nakama.arraypageradapter.ArrayViewPagerAdapter;
 
 import se.emilsjolander.stickylistheaders.StickyListHeadersListView;
 
+import butterknife.Bind;
+import butterknife.ButterKnife;
+
+import com.nakama.arraypageradapter.ArrayPagerAdapter;
 
 public class ListCalendarActivity extends AppCompatActivity {
 
@@ -47,15 +60,117 @@ public class ListCalendarActivity extends AppCompatActivity {
 
     private SQLiteDatabase mDbWeight;
 
+    /** コンテキスト. */
+    private Context mContext;
+
+    @Bind(R.id.view_pager)
+    ViewPager viewPager;
+    @Bind(R.id.control_view)
+    ControlView controlView;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_list_calendar);
+//        setContentView(R.layout.activity_list_calendar);
+        setContentView(R.layout.activity_pager);
+
+        mContext = this;
+
+        ButterKnife.bind(this);
 
         Intent intent = getIntent();
         String paramSelectedDate = intent.getStringExtra("date");
 
         SimpleDateFormat sdf1 = new SimpleDateFormat("yyyyMMdd");
+
+//        try {
+//            mSelectedDate = sdf1.parse(paramSelectedDate);
+//
+//            // db
+//            MyOpenHelper helper = new MyOpenHelper(this);
+//            this.mDbWeight = helper.getWritableDatabase();
+//
+//            // minimum and maximum date of our calendar
+//            // 2 month behind, one year ahead, example: March 2015 <-> May 2015 <-> May 2016
+//            Calendar minDate = Calendar.getInstance();
+//            Calendar maxDate = Calendar.getInstance();
+//
+//            minDate.setTime(mSelectedDate);
+//            maxDate.setTime(mSelectedDate);
+//
+////            minDate.add(Calendar.MONTH, -1);
+//            minDate.set(Calendar.DAY_OF_MONTH, 1);
+////            maxDate.add(Calendar.YEAR, 1);
+////            maxDate.add(Calendar.MONTH, 1);
+////            maxDate.set(Calendar.DAY_OF_MONTH, 1);
+//
+//            //////// This can be done once in another thread
+//            CalendarManager calendarManager = CalendarManager.getInstance(getApplicationContext());
+//            calendarManager.buildCal(minDate, maxDate, Locale.getDefault(), new DayItem(), new WeekItem());
+//            calendarManager.loadWeights();
+//
+////            mListView = (StickyListHeadersListView) findViewById(R.id.sticky_listview);
+//
+//            // ViewPager を生成
+//            mViewPager = (ViewPager) findViewById(R.id.view_pager);
+//
+//            mViewPager.setOnPageChangeListener(new ViewPager.OnPageChangeListener() {
+//                @Override
+//                public void onPageSelected(int position) {
+//                    mViewPager.setCurrentItem(1);
+//                }
+//
+//                @Override
+//                public void onPageScrolled(int position, float positionOffset, int positionOffsetPixels) {
+//
+//                }
+//
+//                @Override
+//                public void onPageScrollStateChanged(int state) {
+//                    if (state == ViewPager.SCROLL_STATE_SETTLING) {
+//                        int page = mViewPager.getCurrentItem();
+//                        /**
+//                         *  ここにしたい処理を書く。例えば、
+//                         *  textView.setText(String.valueOf(page));
+//                         *  という感じ
+//                         */
+//                        if (page == 0) {
+////                        mViewPager.removeViewAt(2);
+////                        ArrayList<Calendar> list = mCustomPagerAdapter.getList();
+////                        for (int i = 0; i < list.size(); i++) {
+////                            Calendar cal = list.get(i);
+////                            cal.add(Calendar.MONTH, -2);
+////                        }
+////                        mCustomPagerAdapter.notifyDataSetChanged();
+////                        mViewPager.setCurrentItem(1);
+//                        } else if (page == 2) {
+//                            ArrayList<Calendar> list = mCustomPagerAdapter.getList();
+//                            ArrayList<Calendar> newList = new ArrayList<>();
+//                            for (int i = 0; i < list.size(); i++) {
+////                                Calendar cal = Calendar.getInstance();
+////                                cal.setTime(list.get(i).getTime());
+////                                cal.add(Calendar.MONTH, 2);
+////
+////                                newList.add(cal);
+//
+//                                list.get(i).add(Calendar.MONTH, 2);
+//                            }
+//
+////                            mCustomPagerAdapter.clearList();
+////                            mCustomPagerAdapter.setList(newList);
+////                            mViewPager.removeAllViews();
+//
+//
+//                            mCustomPagerAdapter.notifyDataSetChanged();
+////                            mViewPager.setCurrentItem(1);
+//                        }
+//                    }
+//                }
+//            });
+//        } catch (ParseException e) {
+//            //失敗時の処理…
+//        }
+
         try {
             mSelectedDate = sdf1.parse(paramSelectedDate);
 
@@ -67,81 +182,142 @@ public class ListCalendarActivity extends AppCompatActivity {
             // 2 month behind, one year ahead, example: March 2015 <-> May 2015 <-> May 2016
             Calendar minDate = Calendar.getInstance();
             Calendar maxDate = Calendar.getInstance();
-
             minDate.setTime(mSelectedDate);
             maxDate.setTime(mSelectedDate);
-
-//            minDate.add(Calendar.MONTH, -1);
             minDate.set(Calendar.DAY_OF_MONTH, 1);
-//            maxDate.add(Calendar.YEAR, 1);
-//            maxDate.add(Calendar.MONTH, 1);
-//            maxDate.set(Calendar.DAY_OF_MONTH, 1);
 
             //////// This can be done once in another thread
             CalendarManager calendarManager = CalendarManager.getInstance(getApplicationContext());
             calendarManager.buildCal(minDate, maxDate, Locale.getDefault(), new DayItem(), new WeekItem());
             calendarManager.loadWeights();
 
-//            mListView = (StickyListHeadersListView) findViewById(R.id.sticky_listview);
+//            MyPagerAdapter adapter = new MyPagerAdapter(new String[]{"1", "2", "3"});
+//            viewPager.setAdapter(adapter);
+//            controlView.setAdapter(adapter);
 
-            // ViewPager を生成
-            mViewPager = (ViewPager) findViewById(R.id.view_pager);
-
-            mViewPager.setOnPageChangeListener(new ViewPager.OnPageChangeListener() {
+            viewPager.setOnPageChangeListener(new ViewPager.OnPageChangeListener() {
                 @Override
                 public void onPageSelected(int position) {
-
+//                    viewPager.setCurrentItem(1);
+//                    onPageSelected(position);
                 }
 
                 @Override
                 public void onPageScrolled(int position, float positionOffset, int positionOffsetPixels) {
+                    String test  = "";
 
+                    StickyListHeadersListView sv0 = (StickyListHeadersListView) viewPager.getChildAt(0);
+                    LinearLayout l0 = null;
+                    ViewGroup.LayoutParams lp0;
+                    if (sv0.getChildCount() >= 2) {
+                        l0 = (LinearLayout) sv0.getChildAt(1);
+                        lp0 = l0.getLayoutParams();
+                        if (l0 != null) {
+                            TextView tv = (TextView) l0.getChildAt(0);
+                            tv.setText(tv.getText() + " BBB");
+                        }
+                    }
+
+                    StickyListHeadersListView sv = null;
+                    if (viewPager.getChildCount() >= 2) {
+                        sv = (StickyListHeadersListView) viewPager.getChildAt(1);
+                    }
+
+                    LinearLayout l;
+                    TextView v;
+                    ViewGroup.LayoutParams lp;
+                    if (sv != null && sv.getChildCount() >= 2) {
+
+                        l = (LinearLayout) sv.getChildAt(1);
+
+                        if (l != null) {
+                            v = (TextView) l.getChildAt(0);
+                            v.setText(v.getText() + " AAAAA");
+
+                            lp = l.getLayoutParams();
+                            lp = new FrameLayout.LayoutParams(FrameLayout.LayoutParams.MATCH_PARENT, FrameLayout.LayoutParams.WRAP_CONTENT);
+
+
+//                            sv.removeViewAt(1);
+                        } else {
+
+                        }
+
+                        if (l0 != null) {
+//                            sv.addView(l0);
+                        }
+
+                        String ooo = "";
+                    }
                 }
 
                 @Override
                 public void onPageScrollStateChanged(int state) {
                     if (state == ViewPager.SCROLL_STATE_SETTLING) {
-                        int page = mViewPager.getCurrentItem();
+                        int page = viewPager.getCurrentItem();
                         /**
                          *  ここにしたい処理を書く。例えば、
                          *  textView.setText(String.valueOf(page));
                          *  という感じ
                          */
                         if (page == 0) {
-//                        mViewPager.removeViewAt(2);
-//                        ArrayList<Calendar> list = mCustomPagerAdapter.getList();
-//                        for (int i = 0; i < list.size(); i++) {
-//                            Calendar cal = list.get(i);
-//                            cal.add(Calendar.MONTH, -2);
-//                        }
-//                        mCustomPagerAdapter.notifyDataSetChanged();
-//                        mViewPager.setCurrentItem(1);
-                        } else if (page == 2) {
+                            ArrayPagerAdapter arrayPagerAdapter = (ArrayPagerAdapter) viewPager.getAdapter();
+
                             ArrayList<Calendar> list = mCustomPagerAdapter.getList();
                             ArrayList<Calendar> newList = new ArrayList<>();
                             for (int i = 0; i < list.size(); i++) {
-//                                Calendar cal = Calendar.getInstance();
-//                                cal.setTime(list.get(i).getTime());
-//                                cal.add(Calendar.MONTH, 2);
-//
-//                                newList.add(cal);
+                                Calendar cal = Calendar.getInstance();
+                                cal.setTime(list.get(i).getTime());
+                                cal.add(Calendar.MONTH, -1);
 
-                                list.get(i).add(Calendar.MONTH, 2);
+                                newList.add(cal);
+                                }
+
+                            mCustomPagerAdapter.clearList();
+                            mCustomPagerAdapter.setList(newList);
+//                            arrayPagerAdapter.clear();
+//                            arrayPagerAdapter.addAll(newList);
+
+                            arrayPagerAdapter.remove(2);
+                            arrayPagerAdapter.add(0, newList.get(0));
+                        } else if (page == 2) {
+                            ArrayPagerAdapter arrayPagerAdapter = (ArrayPagerAdapter) viewPager.getAdapter();
+
+                            ArrayList<Calendar> list = mCustomPagerAdapter.getList();
+                            ArrayList<Calendar> newList = new ArrayList<>();
+                            for (int i = 0; i < list.size(); i++) {
+                                Calendar cal = Calendar.getInstance();
+                                cal.setTime(list.get(i).getTime());
+                                cal.add(Calendar.MONTH, 1);
+
+                                newList.add(cal);
+
+//                                list.get(i).add(Calendar.MONTH, 2);
+//                                mViewPager.setCurrentItem(1);
                             }
 
-//                            mCustomPagerAdapter.clearList();
-//                            mCustomPagerAdapter.setList(newList);
+                            mCustomPagerAdapter.clearList();
+                            mCustomPagerAdapter.setList(newList);
+
+                            arrayPagerAdapter.remove(0);
+                            arrayPagerAdapter.add(2, newList.get(2));
+
+//                            arrayPagerAdapter.clear();
+//                            arrayPagerAdapter.addAll(newList);
+
 //                            mViewPager.removeAllViews();
 
 
-                            mCustomPagerAdapter.notifyDataSetChanged();
-                            mViewPager.setCurrentItem(1);
+//                            mCustomPagerAdapter.notifyDataSetChanged();
+//                            mViewPager.setCurrentItem(1);
+
                         }
                     }
                 }
             });
-        } catch (ParseException e) {
-            //失敗時の処理…
+
+        } catch (Exception e) {
+            String status = e.toString();
         }
     }
 
@@ -182,21 +358,24 @@ public class ListCalendarActivity extends AppCompatActivity {
         mNextDate2.add(Calendar.MONTH, 2);
         mNextDate2.set(Calendar.DAY_OF_MONTH, 1);
 
-
-
-
 //        mCustomPagerAdapter.add(mPreviousDate2);
         mCustomPagerAdapter.add(mPreviousDate);
         mCustomPagerAdapter.add(mCurrentDate);
         mCustomPagerAdapter.add(mNextDate);
 //        mCustomPagerAdapter.add(mNextDate2);
-//        customPagerAdapter.add(Color.BLUE);
-//        customPagerAdapter.add(Color.CYAN);
-//        customPagerAdapter.add(Color.MAGENTA);
-//        customPagerAdapter.add(Color.YELLOW);
 
-        mViewPager.setAdapter(mCustomPagerAdapter);
-        mViewPager.setCurrentItem(1);
+//        mViewPager.setAdapter(mCustomPagerAdapter);
+//        mViewPager.setCurrentItem(1);
+
+
+        MyPagerAdapter adapter = new MyPagerAdapter(new Calendar[]{
+                mPreviousDate,
+                mCurrentDate,
+                mNextDate
+        });
+        viewPager.setAdapter(adapter);
+        controlView.setAdapter(adapter);
+        viewPager.setCurrentItem(1);
 
 
         BusProvider.getInstance().toObserverable()
@@ -209,7 +388,7 @@ public class ListCalendarActivity extends AppCompatActivity {
 ////                        calendarManager.loadPrevious();
 //                        calendarManager.loadCal(((Events.EventsFetched) event).getCalendar());
 //                        mAdapter.notifyDataSetChanged();
-                        mViewPager.setCurrentItem(2);
+                        mViewPager.setCurrentItem(1);
                     } else if (event instanceof Events.EventsPrevious) {
 //                        CalendarManager calendarManager = CalendarManager.getInstance(getApplicationContext());
 ////                        calendarManager.loadPrevious();
@@ -269,39 +448,41 @@ public class ListCalendarActivity extends AppCompatActivity {
         this.mDbWeight.close();
     }
 
-    // Adapterに渡すサンプルListを生成します
-    private List<String> createSampleArray() {
-
-        List<String> list = new ArrayList<>();
-
-        String date = "";
-        String weight = "";
-        String bodyFatPercentage = "";
-
-        // sqliteからデータを全取得
-        Cursor c = mDbWeight.query("weight", new String[]{"date", "weight", "body_fat_percentage"}, null, null, null, null, "date DESC");
-        boolean mov = c.moveToFirst();
-
-        while (mov) {
-            date = c.getString(0);
-            weight = c.getString(1);
-            bodyFatPercentage = c.getString(2);
-
-            if (weight != null && !weight.isEmpty()) {
-                list.add("position: " + date + weight + bodyFatPercentage);
-            }
-
-            // 次のレコードへ
-            mov = c.moveToNext();
+    private class MyPagerAdapter extends ArrayViewPagerAdapter<Calendar> {
+        public MyPagerAdapter(Calendar[] data) {
+            super(data);
         }
 
-        c.close();
+        @Override
+        public View getView(LayoutInflater inflater, ViewGroup container, Calendar item, int position) {
+//            View v = inflater.inflate(R.layout.item_text_page, container, false);
+//            ((TextView) v.findViewById(R.id.item_txt)).setText(item);
 
-//        for (int i = 0; i < 100; i++) {
-//            list.add("position: " + i);
-//        }
-        return list;
+
+            ArrayList<Calendar> list = mCustomPagerAdapter.getList();
+
+            StickyListHeadersListView stickyListHeadersListView = new StickyListHeadersListView(mContext);
+
+            Calendar minDate = Calendar.getInstance();
+            Calendar maxDate = Calendar.getInstance();
+            minDate.setTime(list.get(position).getTime());
+            maxDate.setTime(list.get(position).getTime());
+            minDate.set(Calendar.DAY_OF_MONTH, 1);
+
+            CalendarManager calendarManager = CalendarManager.getInstance(mContext);
+
+            calendarManager.buildCal(minDate, maxDate, Locale.getDefault(), new DayItem(), new WeekItem());
+            calendarManager.loadWeights();
+
+            StickyAdapter adapter = new StickyAdapter(mContext, android.R.layout.simple_list_item_1, CalendarManager.getInstance().getWeights());
+            stickyListHeadersListView.setAdapter(adapter);
+
+            View v = stickyListHeadersListView;
+
+
+            return v;
+        }
+
     }
-
 }
 

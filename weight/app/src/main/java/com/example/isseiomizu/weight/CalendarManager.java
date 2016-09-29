@@ -72,9 +72,10 @@ public class CalendarManager {
     }
 
     public static CalendarManager getInstance(Context context) {
-        if (mInstance == null) {
-            mInstance = new CalendarManager(context);
-        }
+//        if (mInstance == null) {
+//            mInstance = new CalendarManager(context);
+//        }
+        mInstance = new CalendarManager(context);
 
         // db
         if (mDbWeight == null) {
@@ -166,14 +167,18 @@ public class CalendarManager {
         mMinCal.setTime(minDate.getTime());
         mMaxCal.setTime(maxDate.getTime());
 
+        Calendar calMax = Calendar.getInstance();
+        calMax.setTime(mMaxCal.getTime());
+        calMax.add(Calendar.MONTH, 1);
+
         // maxDate is exclusive, here we bump back to the previous day, as maxDate if December 1st, 2020,
         // we don't include that month in our list
 //        mMaxCal.add(Calendar.MINUTE, -1);
 
         // Now iterate we iterate between mMinCal and mMaxCal so we build our list of weeks
         mWeekCounter.setTime(mMinCal.getTime());
-        int maxMonth = mMaxCal.get(Calendar.MONTH);
-        int maxYear = mMaxCal.get(Calendar.YEAR);
+        int maxMonth = calMax.get(Calendar.MONTH);
+        int maxYear = calMax.get(Calendar.YEAR);
 
         int currentMonth = mWeekCounter.get(Calendar.MONTH);
         int currentYear = mWeekCounter.get(Calendar.YEAR);
@@ -203,6 +208,9 @@ public class CalendarManager {
 
             currentMonth = mWeekCounter.get(Calendar.MONTH);
             currentYear = mWeekCounter.get(Calendar.YEAR);
+
+            Date dateNext = mWeekCounter.getTime();
+            Log.d(LOG_TAG, String.format("Next week: %s", dateNext));
         }
     }
 
@@ -285,18 +293,22 @@ public class CalendarManager {
 
         SimpleDateFormat sdf1 = new SimpleDateFormat("yyyyMMdd");
 
+        Calendar calMax = Calendar.getInstance();
+        calMax.setTime(mMaxCal.getTime());
+//        calMax.add(Calendar.MONTH, 1);
 
-        int maxMonth = mMaxCal.get(Calendar.MONTH);
-        int maxYear = mMaxCal.get(Calendar.YEAR);
+        int maxMonth = calMax.get(Calendar.MONTH);
+        int maxYear = calMax.get(Calendar.YEAR);
 
         Calendar mWeekCounter = Calendar.getInstance(mLocale);
         mWeekCounter.setTime(mMinCal.getTime());
         int currentMonth = mWeekCounter.get(Calendar.MONTH);
         int currentYear = mWeekCounter.get(Calendar.YEAR);
 
+
         for (IWeekItem weekItem : getWeeks()) {
             for (IDayItem dayItem : weekItem.getDayItems()) {
-                IWeightItem item = new WeightItem();
+                IWeightItem item;
                 item = map.get(sdf1.format(dayItem.getDate()));
 
                 if (item == null) {
@@ -304,7 +316,10 @@ public class CalendarManager {
                 }
 
                 item.setDate(dayItem.getDate());
-                currentMonth = dayItem.getDate().getMonth();
+//                currentMonth = Integer.parseInt(dayItem.getMonth());
+                Calendar cal = Calendar.getInstance();
+                cal.setTime(dayItem.getDate());
+                currentMonth = cal.get(Calendar.MONTH);
 
                 if ((currentMonth == maxMonth // Up to, including the month.
                         || currentYear < maxYear) // Up to the year.

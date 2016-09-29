@@ -79,8 +79,7 @@ public class StickyAdapter extends ArrayAdapter<IWeightItem> implements StickyLi
     public int getHeaderItem(int position) {
         Calendar cal = Calendar.getInstance();
         cal.setTime(mWeights.get(position).getDate());
-//        cal.add(Calendar.MONTH, 1);
-        String lastMonth = String.format("%04d%02d", cal.get(Calendar.YEAR), cal.get(Calendar.MONTH));
+        String lastMonth = String.format("%04d%02d", cal.get(Calendar.YEAR), cal.get(Calendar.MONTH) + 1);
 //        String lastMonth = new SimpleDateFormat( "yyyyMM" ).format( cal.getTime() );
 
         int yearMonth = Integer.parseInt(lastMonth);
