@@ -28,6 +28,7 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.FrameLayout;
 import android.widget.LinearLayout;
+import android.widget.ListView;
 import android.widget.TextView;
 
 import com.example.isseiomizu.weight.models.DayItem;
@@ -36,6 +37,7 @@ import com.nakama.arraypageradapter.ArrayPagerAdapter;
 import com.nakama.arraypageradapter.ArrayViewPagerAdapter;
 
 import se.emilsjolander.stickylistheaders.StickyListHeadersListView;
+import se.emilsjolander.stickylistheaders.WrapperView;
 
 import butterknife.Bind;
 import butterknife.ButterKnife;
@@ -65,8 +67,8 @@ public class ListCalendarActivity extends AppCompatActivity {
 
     @Bind(R.id.view_pager)
     ViewPager viewPager;
-    @Bind(R.id.control_view)
-    ControlView controlView;
+//    @Bind(R.id.control_view)
+//    ControlView controlView;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -204,51 +206,51 @@ public class ListCalendarActivity extends AppCompatActivity {
 
                 @Override
                 public void onPageScrolled(int position, float positionOffset, int positionOffsetPixels) {
-                    String test  = "";
-
-                    StickyListHeadersListView sv0 = (StickyListHeadersListView) viewPager.getChildAt(0);
-                    LinearLayout l0 = null;
-                    ViewGroup.LayoutParams lp0;
-                    if (sv0.getChildCount() >= 2) {
-                        l0 = (LinearLayout) sv0.getChildAt(1);
-                        lp0 = l0.getLayoutParams();
-                        if (l0 != null) {
-                            TextView tv = (TextView) l0.getChildAt(0);
-                            tv.setText(tv.getText() + " BBB");
-                        }
-                    }
-
-                    StickyListHeadersListView sv = null;
-                    if (viewPager.getChildCount() >= 2) {
-                        sv = (StickyListHeadersListView) viewPager.getChildAt(1);
-                    }
-
-                    LinearLayout l;
-                    TextView v;
-                    ViewGroup.LayoutParams lp;
-                    if (sv != null && sv.getChildCount() >= 2) {
-
-                        l = (LinearLayout) sv.getChildAt(1);
-
-                        if (l != null) {
-                            v = (TextView) l.getChildAt(0);
-                            v.setText(v.getText() + " AAAAA");
-
-                            lp = l.getLayoutParams();
-                            lp = new FrameLayout.LayoutParams(FrameLayout.LayoutParams.MATCH_PARENT, FrameLayout.LayoutParams.WRAP_CONTENT);
-
-
-//                            sv.removeViewAt(1);
-                        } else {
-
-                        }
-
-                        if (l0 != null) {
-//                            sv.addView(l0);
-                        }
-
-                        String ooo = "";
-                    }
+//                    String test  = "";
+//
+//                    StickyListHeadersListView sv0 = (StickyListHeadersListView) viewPager.getChildAt(0);
+//                    LinearLayout l0 = null;
+//                    ViewGroup.LayoutParams lp0;
+//                    if (sv0.getChildCount() >= 2) {
+//                        l0 = (LinearLayout) sv0.getChildAt(1);
+//                        lp0 = l0.getLayoutParams();
+//                        if (l0 != null) {
+//                            TextView tv = (TextView) l0.getChildAt(0);
+//                            tv.setText(tv.getText() + " BBB");
+//                        }
+//                    }
+//
+//                    StickyListHeadersListView sv = null;
+//                    if (viewPager.getChildCount() >= 2) {
+//                        sv = (StickyListHeadersListView) viewPager.getChildAt(1);
+//                    }
+//
+//                    LinearLayout l;
+//                    TextView v;
+//                    ViewGroup.LayoutParams lp;
+//                    if (sv != null && sv.getChildCount() >= 2) {
+//
+//                        l = (LinearLayout) sv.getChildAt(1);
+//
+//                        if (l != null) {
+//                            v = (TextView) l.getChildAt(0);
+//                            v.setText(v.getText() + " AAAAA");
+//
+//                            lp = l.getLayoutParams();
+//                            lp = new FrameLayout.LayoutParams(FrameLayout.LayoutParams.MATCH_PARENT, FrameLayout.LayoutParams.WRAP_CONTENT);
+//
+//
+////                            sv.removeViewAt(1);
+//                        } else {
+//
+//                        }
+//
+//                        if (l0 != null) {
+////                            sv.addView(l0);
+//                        }
+//
+//                        String ooo = "";
+//                    }
                 }
 
                 @Override
@@ -374,7 +376,7 @@ public class ListCalendarActivity extends AppCompatActivity {
                 mNextDate
         });
         viewPager.setAdapter(adapter);
-        controlView.setAdapter(adapter);
+//        controlView.setAdapter(adapter);
         viewPager.setCurrentItem(1);
 
 
@@ -455,13 +457,33 @@ public class ListCalendarActivity extends AppCompatActivity {
 
         @Override
         public View getView(LayoutInflater inflater, ViewGroup container, Calendar item, int position) {
-//            View v = inflater.inflate(R.layout.item_text_page, container, false);
-//            ((TextView) v.findViewById(R.id.item_txt)).setText(item);
+////            View v = inflater.inflate(R.layout.item_text_page, container, false);
+////            ((TextView) v.findViewById(R.id.item_txt)).setText(item);
+//
+//
+//            ArrayList<Calendar> list = mCustomPagerAdapter.getList();
+//
+//            StickyListHeadersListView stickyListHeadersListView = new StickyListHeadersListView(mContext);
+//
+//            Calendar minDate = Calendar.getInstance();
+//            Calendar maxDate = Calendar.getInstance();
+//            minDate.setTime(list.get(position).getTime());
+//            maxDate.setTime(list.get(position).getTime());
+//            minDate.set(Calendar.DAY_OF_MONTH, 1);
+//
+//            CalendarManager calendarManager = CalendarManager.getInstance(mContext);
+//
+//            calendarManager.buildCal(minDate, maxDate, Locale.getDefault(), new DayItem(), new WeekItem());
+//            calendarManager.loadWeights();
+//
+//            StickyAdapter adapter = new StickyAdapter(mContext, android.R.layout.simple_list_item_1, CalendarManager.getInstance().getWeights());
+//            stickyListHeadersListView.setAdapter(adapter);
+//
+//            View v = stickyListHeadersListView;
+
 
 
             ArrayList<Calendar> list = mCustomPagerAdapter.getList();
-
-            StickyListHeadersListView stickyListHeadersListView = new StickyListHeadersListView(mContext);
 
             Calendar minDate = Calendar.getInstance();
             Calendar maxDate = Calendar.getInstance();
@@ -474,12 +496,43 @@ public class ListCalendarActivity extends AppCompatActivity {
             calendarManager.buildCal(minDate, maxDate, Locale.getDefault(), new DayItem(), new WeekItem());
             calendarManager.loadWeights();
 
-            StickyAdapter adapter = new StickyAdapter(mContext, android.R.layout.simple_list_item_1, CalendarManager.getInstance().getWeights());
-            stickyListHeadersListView.setAdapter(adapter);
+            // View を生成
+            LinearLayout linearLayout= new LinearLayout(ListCalendarActivity.this);
+            linearLayout.setLayoutParams(new LinearLayout.LayoutParams(
+                    LinearLayout.LayoutParams.WRAP_CONTENT,
+                    LinearLayout.LayoutParams.WRAP_CONTENT)
+            );
+            linearLayout.setOrientation(LinearLayout.VERTICAL);
+            linearLayout.setBackgroundColor(Color.GREEN);
 
-            View v = stickyListHeadersListView;
+
+            // header
+            View header = inflater.inflate(R.layout.sticky_header_row, null);
+            WeightListAdapter.HeaderViewHolder holder = new WeightListAdapter.HeaderViewHolder(header);
+            header.setTag(holder);
+
+            Calendar cal = Calendar.getInstance();
+            cal.setTime(CalendarManager.getInstance().getWeights().get(position).getDate());
+
+            holder.textView.setText(cal.get(Calendar.YEAR) + "/" + (cal.get(Calendar.MONTH) + 1));
+
+            linearLayout.addView(header);
 
 
+            // View を生成
+            ListView listView = new ListView(ListCalendarActivity.this);
+            ViewGroup.LayoutParams lp2 = new ViewGroup.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT);
+            lp2.height = FrameLayout.LayoutParams.WRAP_CONTENT;
+            lp2.width = FrameLayout.LayoutParams.WRAP_CONTENT;
+            listView.setLayoutParams(lp2);
+
+            WeightListAdapter adapter = new WeightListAdapter(ListCalendarActivity.this);
+            adapter.setTweetList(CalendarManager.getInstance().getWeights());
+            listView.setAdapter(adapter);
+
+            linearLayout.addView(listView);
+
+            View v = linearLayout;
             return v;
         }
 

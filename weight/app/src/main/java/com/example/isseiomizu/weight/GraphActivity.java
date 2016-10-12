@@ -21,7 +21,9 @@ import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 public class GraphActivity extends AppCompatActivity {
 
@@ -92,8 +94,10 @@ public class GraphActivity extends AppCompatActivity {
         // Y軸 目標体重
         Double[] yDoubleValueTarget = {70.3, 70.3, 70.3, 70.3, 70.3};
 
+        Map<String,String> map = new HashMap<>();
+
         // sqliteからデータを全取得
-        Cursor c = mDbWeight.query("weight", new String[]{"date", "weight", "body_fat_percentage"}, null, null, null, null, "date DESC");
+        Cursor c = mDbWeight.query("weight", new String[]{"date", "weight", "body_fat_percentage"}, "date like ? ", new String[]{"2016%"}, null, null, "date DESC");
         boolean mov = c.moveToFirst();
 
         while (mov) {
@@ -135,6 +139,9 @@ public class GraphActivity extends AppCompatActivity {
 
         // (2) グラフのタイトル、X軸Y軸ラベル、色等の設定
         XYMultipleSeriesRenderer renderer = new XYMultipleSeriesRenderer();
+
+        renderer.setPanEnabled(false, false);
+
         renderer.setChartTitle("体重");     // グラフタイトル
         renderer.setChartTitleTextSize(25);             //
         renderer.setXTitle("日付");                     // X軸タイトル
@@ -143,10 +150,10 @@ public class GraphActivity extends AppCompatActivity {
         renderer.setLegendTextSize(25);                 // 凡例　テキストサイズ
         renderer.setPointSize(3f);                      // ポイントマーカーサイズ
         renderer.setXAxisMin(xDateValue[xDateValue.length - 1].getTime() - HALF_DAY);  // X軸最小値
-//        renderer.setXAxisMax(xDateValue[0].getTime() + HALF_DAY);    // X軸最大値
-        renderer.setXAxisMax(xDateValue[xDateValue.length - 31].getTime() + HALF_DAY);    // X軸最大値
+        renderer.setXAxisMax(xDateValue[0].getTime() + HALF_DAY);    // X軸最大値
+//        renderer.setXAxisMax(xDateValue[xDateValue.length - 31].getTime() + HALF_DAY);    // X軸最大値
         renderer.setYAxisMin(53.0f);                    // Y軸最小値
-        renderer.setYAxisMax(60.0f);                    // Y軸最大値
+        renderer.setYAxisMax(63.0f);                    // Y軸最大値
         renderer.setXLabelsAlign(Paint.Align.CENTER);         // X軸ラベル配置位置
         renderer.setYLabelsAlign(Paint.Align.RIGHT);          // Y軸ラベル配置位置
         renderer.setAxesColor(Color.BLACK);            // X軸、Y軸カラー
@@ -200,6 +207,7 @@ public class GraphActivity extends AppCompatActivity {
 
         // (5)タイムチャートグラフの作成
         GraphicalView mChartView = ChartFactory.getTimeChartView(this, dataset, renderer, "M/d");
+//        GraphicalView mChartView = ChartFactory.getLineChartView(this, dataset, renderer);
 
         return mChartView;
 
