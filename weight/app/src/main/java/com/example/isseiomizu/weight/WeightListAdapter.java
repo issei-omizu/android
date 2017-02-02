@@ -5,12 +5,15 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.BaseAdapter;
+import android.widget.EditText;
 import android.widget.TextView;
 
 import com.example.isseiomizu.weight.models.IWeightItem;
+import com.example.isseiomizu.weight.models.WeightItem;
 
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 /**
@@ -25,11 +28,13 @@ public class WeightListAdapter extends BaseAdapter {
     List<IWeightItem> tweetList;
 
     private LayoutInflater mInflater;
+    private SqliteController mSqliteController;
 
     public WeightListAdapter(Context context) {
         this.context = context;
         this.layoutInflater = (LayoutInflater)context.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
         mInflater = LayoutInflater.from(context);
+        this.mSqliteController = SqliteController.getInstance(context);
     }
 
     public void setTweetList(List<IWeightItem> tweetList) {
@@ -64,6 +69,7 @@ public class WeightListAdapter extends BaseAdapter {
         }
 
         SimpleDateFormat sdf1 = new SimpleDateFormat("d");
+        SimpleDateFormat sdf2 = new SimpleDateFormat("yyyyMMdd");
 
         // Adapterに渡されたテキストを入れます
         holder.textView.setText(sdf1.format(tweetList.get(position).getDate()));
@@ -73,6 +79,29 @@ public class WeightListAdapter extends BaseAdapter {
         return convertView;
     }
 
+    private void setWriteDate(View convertView) {
+        WeightListAdapter.ItemViewHolder holder;
+        holder = (WeightListAdapter.ItemViewHolder) convertView.getTag();
+
+        String weight = holder.itemRowWeight.getText().toString();
+        String bodyFatPercentage = holder.itemRowBodyFatPercentage.getText().toString();
+
+        if (weight.isEmpty()) {
+//            weight = "0";
+        }
+
+        if (bodyFatPercentage.isEmpty()) {
+//            bodyFatPercentage = "0";
+        }
+
+        // 体重データ更新
+        // sqliteに保存
+        IWeightItem weightItem = new WeightItem();
+//        weightItem.setDate(this.mSqliteController.String2date(date));
+        weightItem.setWeight(weight);
+        weightItem.setBodyFatPercentage(bodyFatPercentage);
+        this.mSqliteController.writeWeight(weightItem);
+    }
 
     public static class HeaderViewHolder {
         TextView textView;

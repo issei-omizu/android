@@ -1,13 +1,13 @@
 package com.example.isseiomizu.weight;
 
-import com.example.isseiomizu.weight.models.DayItem;
-import com.example.isseiomizu.weight.models.WeekItem;
+import com.example.isseiomizu.weight.models.IWeightItem;
 
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.view.View.OnFocusChangeListener;
 import android.content.res.Configuration;
 
+import com.example.isseiomizu.weight.models.WeightItem;
 import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.GoogleApiAvailability;
 import com.google.api.client.extensions.android.http.AndroidHttp;
@@ -51,9 +51,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Calendar;
-import java.util.Date;
 import java.util.List;
-import java.util.Locale;
 import java.util.Map;
 import java.util.HashMap;
 
@@ -89,6 +87,7 @@ public class MainActivity extends AppCompatActivity
     private TextView mTextView;
     private EditText editWeight;
     private EditText editBodyFatPercentage;
+    private EditText editBodyTemperature;
 
     private int mApiMode = 1;
     private List mListWrite = new ArrayList<>();
@@ -98,34 +97,25 @@ public class MainActivity extends AppCompatActivity
     private Map<String, List<String>> mapWeight = new HashMap<>();
 
     private SQLiteDatabase mDbWeight;
+    private SqliteController mSqliteController;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-//        // minimum and maximum date of our calendar
-//        // 2 month behind, one year ahead, example: March 2015 <-> May 2015 <-> May 2016
-//        Calendar minDate = Calendar.getInstance();
-//        Calendar maxDate = Calendar.getInstance();
-//
-//        minDate.add(Calendar.MONTH, -2);
-//        minDate.set(Calendar.DAY_OF_MONTH, 1);
-//        maxDate.add(Calendar.YEAR, 1);
-//
-//        //////// This can be done once in another thread
-//        CalendarManager calendarManager = CalendarManager.getInstance(getApplicationContext());
-//        calendarManager.buildCal(minDate, maxDate, Locale.getDefault(), new DayItem(), new WeekItem());
-
         // db
         MyOpenHelper helper = new MyOpenHelper(this);
         this.mDbWeight = helper.getWritableDatabase();
+        this.mSqliteController = SqliteController.getInstance(this);
+
 
         this.mRlWeight = (RelativeLayout) findViewById(R.id.rlWeight);
         this.mRlWeight.setVisibility(View.VISIBLE);
 
         this.editWeight = (EditText) findViewById(R.id.editWeight);
         this.editBodyFatPercentage = (EditText) findViewById(R.id.editBodyFatPercentage);
+        this.editBodyTemperature = (EditText) findViewById(R.id.editBodyTemperature);
 
         this.mBtnImport = (Button) findViewById(R.id.btnImport);
         this.mBtnImport.setOnClickListener(new View.OnClickListener() {
@@ -165,6 +155,15 @@ public class MainActivity extends AppCompatActivity
             }
         });
 
+        this.editBodyTemperature.setOnFocusChangeListener(new OnFocusChangeListener() {
+            @Override
+            public void onFocusChange(View v, boolean hasFocus) {
+                if(!hasFocus) {
+                    setWriteDate();
+                }
+            }
+        });
+
         final DatePicker datePicker = (DatePicker) findViewById(R.id.datePicker);
         Calendar cal = Calendar.getInstance();
         int year = cal.get(Calendar.YEAR);
@@ -200,29 +199,14 @@ public class MainActivity extends AppCompatActivity
 
         editWeight.setText("");
         editBodyFatPercentage.setText("");
+        editBodyTemperature.setText("");
 
-
-        // sqliteからデータ取得
-        Cursor c = mDbWeight.query("weight", new String[]{"date", "weight", "body_fat_percentage"}, "date = ?", new String[]{mDate}, null, null, "date DESC");
-
-        boolean mov = c.moveToFirst();
-
-        String weight = "";
-        String bodyFatPercentage = "";
-        if (mov) {
-            weight = c.getString(1);
-            bodyFatPercentage = c.getString(2);
-
-            if (weight != null) {
-                editWeight.setText(weight);
-            }
-
-            if (bodyFatPercentage != null) {
-                editBodyFatPercentage.setText(bodyFatPercentage);
-            }
+        IWeightItem weightItem = this.mSqliteController.searchWeightByDate(mDate);
+        if (weightItem != null) {
+            editWeight.setText(weightItem.getWeight());
+            editBodyFatPercentage.setText(weightItem.getBodyFatPercentage());
+            editBodyTemperature.setText(weightItem.getBodyTemperature());
         }
-
-        c.close();
     }
 
     @Override
@@ -247,7 +231,8 @@ public class MainActivity extends AppCompatActivity
     }
 
     public void startListCalendarActivity(View view) {
-        Intent intent = new Intent(getApplication(), ListCalendarActivity.class);
+//        Intent intent = new Intent(getApplication(), ListCalendarActivity.class);
+        Intent intent = new Intent(getApplication(), PhysicalMeasurementListActivity.class);
         intent.putExtra("date", mDate);
         startActivity(intent);
     }
@@ -255,6 +240,7 @@ public class MainActivity extends AppCompatActivity
     private void setWriteDate() {
         String weight = editWeight.getText().toString();
         String bodyFatPercentage = editBodyFatPercentage.getText().toString();
+        String bodyTemperature = editBodyTemperature.getText().toString();
 
         if (weight.isEmpty()) {
 //            weight = "0";
@@ -266,7 +252,7 @@ public class MainActivity extends AppCompatActivity
 
         mApiMode = 2;
         mListWrite = new ArrayList<>();
-        List listValue = Arrays.asList(weight, bodyFatPercentage);
+        List listValue = Arrays.asList(weight, bodyFatPercentage, bodyTemperature);
         mListWrite.add(listValue);
 
         // 体重データ更新
@@ -274,9 +260,9 @@ public class MainActivity extends AppCompatActivity
         List values;
         Integer count = this.mapWeight.size() + 1;
         if (updateWeight != null) {
-            values = Arrays.asList(updateWeight.get(0).toString(), weight, bodyFatPercentage);
+            values = Arrays.asList(updateWeight.get(0).toString(), weight, bodyFatPercentage, bodyTemperature);
         } else {
-            values = Arrays.asList(count.toString(), weight, bodyFatPercentage);
+            values = Arrays.asList(count.toString(), weight, bodyFatPercentage, bodyTemperature);
         }
 
         this.mapWeight.put(mDate, values);
@@ -284,35 +270,13 @@ public class MainActivity extends AppCompatActivity
         // 本当に更新された？確認用
         updateWeight = this.mapWeight.get(mDate);
 
-
         // sqliteに保存
-        Cursor c = this.mDbWeight.query("weight", new String[] {"date", "weight", "body_fat_percentage"}, "date = ?", new String[]{ mDate }, null, null, "date DESC");
-
-        boolean mov = c.moveToFirst();
-        c.close();
-
-        if (mov) {
-            if (weight.isEmpty() && bodyFatPercentage.isEmpty()) {
-                // 体重・体脂肪率両方とも未入力の場合はレコードを削除する
-                mDbWeight.delete( "weight", "date=?", new String[] { mDate });
-            } else {
-                ContentValues updateValues = new ContentValues();
-                updateValues.put("weight", weight);
-                updateValues.put("body_fat_percentage", bodyFatPercentage);
-                this.mDbWeight.update("weight", updateValues, "date=?", new String[] { mDate });
-            }
-        } else {
-            // 体重・体脂肪率どちらか入力されている場合は追加する
-            if (!weight.isEmpty() || !bodyFatPercentage.isEmpty()) {
-                ContentValues insertValues = new ContentValues();
-                insertValues.put("date", mDate);
-                insertValues.put("weight", weight);
-                insertValues.put("body_fat_percentage", bodyFatPercentage);
-                long id = this.mDbWeight.insert("weight", null, insertValues);
-                long confirm = id;
-            }
-        }
-
+        IWeightItem weightItem = new WeightItem();
+        weightItem.setDate(this.mSqliteController.String2date(mDate));
+        weightItem.setWeight(weight);
+        weightItem.setBodyFatPercentage(bodyFatPercentage);
+        weightItem.setBodyTemperature(bodyTemperature);
+        this.mSqliteController.writeWeight(weightItem);
     }
 
     private void setImportData() {

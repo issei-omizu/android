@@ -13,6 +13,7 @@ public class WeightItem implements IWeightItem {
     private Date mDate;
     private String mWeight;
     private String mBodyFatPercentage;
+    private String mBodyTemperature;
     private int mValue;
     private int mDayOfTheWeek;
     private boolean mToday;
@@ -64,6 +65,12 @@ public class WeightItem implements IWeightItem {
 
     public void setBodyFatPercentage(String bodyFatPercentage) {
         this.mBodyFatPercentage = bodyFatPercentage;
+    };
+
+    public String getBodyTemperature() { return mBodyTemperature; };
+
+    public void setBodyTemperature(String bodyTemperature) {
+        this.mBodyTemperature = bodyTemperature;
     };
 
     public int getValue() {

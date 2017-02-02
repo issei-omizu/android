@@ -23,22 +23,13 @@
             android:layout_alignParentEnd="true" />
 
         <EditText
-            android:layout_width="100dp"
             android:layout_height="wrap_content"
             android:inputType="number|numberDecimal"
             android:ems="10"
             android:id="@+id/editWeight"
             android:layout_alignParentLeft="true"
-            android:layout_alignParentStart="true" />
-
-        <EditText
-            android:layout_width="100dp"
-            android:layout_height="wrap_content"
-            android:inputType="number|numberDecimal"
-            android:ems="10"
-            android:id="@+id/editBodyFatPercentage"
-            android:layout_alignTop="@+id/editWeight"
-            android:layout_centerHorizontal="true" />
+            android:layout_alignParentStart="true"
+            android:layout_width="60dp" />
 
         <Button
             android:layout_width="wrap_content"
@@ -76,6 +67,26 @@
             android:layout_alignParentLeft="true"
             android:layout_alignParentStart="true"
             android:onClick="startListCalendarActivity" />
+
+        <EditText
+            android:layout_height="wrap_content"
+            android:inputType="number|numberDecimal"
+            android:ems="10"
+            android:id="@+id/editBodyTemperature"
+            android:layout_width="60dp"
+            android:layout_alignParentTop="true"
+            android:layout_alignLeft="@+id/btnExport"
+            android:layout_alignStart="@+id/btnExport" />
+
+        <EditText
+            android:layout_height="wrap_content"
+            android:inputType="number|numberDecimal"
+            android:ems="10"
+            android:id="@+id/editBodyFatPercentage"
+            android:layout_width="60dp"
+            android:layout_alignParentTop="true"
+            android:layout_toRightOf="@+id/btnListCalendar"
+            android:layout_toEndOf="@+id/btnListCalendar" />
     </RelativeLayout>
 
 </RelativeLayout>

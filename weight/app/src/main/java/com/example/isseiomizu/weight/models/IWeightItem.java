@@ -23,6 +23,10 @@ public interface IWeightItem {
 
     void setBodyFatPercentage(String bodyFatPercentage);
 
+    String getBodyTemperature();
+
+    void setBodyTemperature(String bodyTemperature);
+
     boolean isToday();
 
     void setToday(boolean today);

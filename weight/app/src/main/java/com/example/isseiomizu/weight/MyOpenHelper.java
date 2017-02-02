@@ -10,7 +10,7 @@ import android.database.sqlite.SQLiteOpenHelper;
 
 public class MyOpenHelper extends SQLiteOpenHelper {
     public MyOpenHelper(Context context) {
-        super(context, "WeightDB", null, 1);
+        super(context, "WeightDB", null, 3);
     }
 
     @Override
@@ -24,6 +24,11 @@ public class MyOpenHelper extends SQLiteOpenHelper {
 
     @Override
     public void onUpgrade(SQLiteDatabase db, int oldVersion, int newVersion) {
-
+        // DBバージョンアップ時のデータ移行を実装
+        if (oldVersion < newVersion) {
+            if (oldVersion == 2) {
+                db.execSQL("alter table weight add body_temperature text default '36.50'" );
+            }
+        }
     }
 }
