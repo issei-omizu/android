@@ -231,8 +231,8 @@ public class MainActivity extends AppCompatActivity
     }
 
     public void startListCalendarActivity(View view) {
-//        Intent intent = new Intent(getApplication(), ListCalendarActivity.class);
-        Intent intent = new Intent(getApplication(), PhysicalMeasurementListActivity.class);
+        Intent intent = new Intent(getApplication(), ListCalendarActivity.class);
+//        Intent intent = new Intent(getApplication(), PhysicalMeasurementListActivity.class);
         intent.putExtra("date", mDate);
         startActivity(intent);
     }
