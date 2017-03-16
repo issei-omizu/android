@@ -6,6 +6,7 @@ import android.net.Uri;
 import android.os.Handler;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.view.WindowManager;
 import android.widget.EditText;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -51,8 +52,10 @@ public class MainActivity extends AppCompatActivity {
 
                     // secondsで設定した時間がすぎたら音を鳴らす
                     if (isTimeUp(mLapTime)) {
-                        mIntervalCounter++;
+                        mMinutes++;
                         mTimeUp = true;
+
+                        mViewMinutes.setText(String.valueOf(mMinutes));
 
                         // 再生
                         mRingtone.play();
@@ -106,7 +109,7 @@ public class MainActivity extends AppCompatActivity {
     Timer mTimer = null;                //onClickメソッドでインスタンス生成
     Handler mHandler = new Handler();   //UI Threadへのpost用ハンドラ
     float mLapTime = 0.0f;
-    int mIntervalCounter = 0;
+    int mMinutes = 0;
     int mIntervalTime = 0;
     int mSeconds = 0;
     boolean mTimeUp = false;
@@ -115,6 +118,9 @@ public class MainActivity extends AppCompatActivity {
 
     @BindView(R.id.view_seconds)
     TextView mViewSeconds;
+
+    @BindView(R.id.view_minutes)
+    TextView mViewMinutes;
 
     @BindView(R.id.editInterval)
     EditText mEditInterval;
@@ -134,6 +140,9 @@ public class MainActivity extends AppCompatActivity {
 
     @OnClick(R.id.btnStart)
     public void start() {
+        // Keep screen on
+        getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
+
         if (mTimer == null) {
             //タイマーの初期化処理
             timerTask = new MyTimerTask();
@@ -156,6 +165,9 @@ public class MainActivity extends AppCompatActivity {
 
     @OnClick(R.id.btnStop)
     public void stop() {
+        // Keep screen off
+        getWindow().clearFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
+
         if (mTimer != null) {
             mTimer.cancel();
             mTimer = null;
@@ -163,7 +175,8 @@ public class MainActivity extends AppCompatActivity {
 
         //現在のLapTime
         mViewSeconds.setText("0");
-        mIntervalCounter = 0;
+        mViewMinutes.setText("0");
+        mMinutes = 0;
 
         Toast.makeText(this, "stopが押されました",
                 Toast.LENGTH_LONG).show();
