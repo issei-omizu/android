@@ -65,7 +65,8 @@ public class MainActivity extends AppCompatActivity {
                 .observeOn(AndroidSchedulers.mainThread())
                 // 購読(subscribe)
                 .subscribe(aLong -> {
-
+                    SampleInterface sampleInterface = this::updateTimeView;
+                    sampleInterface.say(aLong);
                 });
 
 
@@ -116,5 +117,10 @@ public class MainActivity extends AppCompatActivity {
     private void updateTimeView(float data) {
         //現在のLapTime
         mViewSeconds.setText(String.format(Locale.US, "%f", data));
+    }
+
+    @FunctionalInterface
+    private interface SampleInterface {
+        void say(float data);
     }
 }
