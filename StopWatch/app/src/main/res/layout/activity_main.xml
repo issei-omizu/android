@@ -38,7 +38,7 @@
                 android:layout_alignParentTop="true"
                 android:layout_centerHorizontal="true"
                 android:id="@+id/editInterval"
-                android:text="5"
+                android:text="10"
                 android:layout_weight="1" />
         </LinearLayout>
 

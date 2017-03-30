@@ -1,9 +1,5 @@
 package com.example.isseiomizu.stopwatch;
 
-import android.media.Ringtone;
-import android.media.RingtoneManager;
-import android.net.Uri;
-import android.os.Handler;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.view.WindowManager;
@@ -11,110 +7,24 @@ import android.widget.EditText;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import java.math.BigDecimal;
+import java.util.Locale;
 import java.util.Timer;
-import java.util.TimerTask;
+import java.util.concurrent.TimeUnit;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;
 import butterknife.OnClick;
+import io.reactivex.Flowable;
+import io.reactivex.android.schedulers.AndroidSchedulers;
+import io.reactivex.disposables.Disposable;
 
 
 public class MainActivity extends AppCompatActivity {
 
-    class MyTimerTask extends TimerTask {
-        @Override
-        public void run() {
-            // mHandlerを通じてUI Threadへ処理をキューイング
-            mHandler.post(new Runnable() {
-                public void run() {
-                    //実行間隔分を加算処理
-                    mLapTime += 1.0d;
+    MyTimerTask timerTask = null;
+    Timer mTimer = null;
 
-                    if (mTimeUp) {
-                        if (isRingtone(mLapTime)) {
-                            // 停止
-                            mRingtone.stop();
-                        }
-                        if (isInterval(mLapTime)) {
-                            mTimeUp = false;
-                            mLapTime = 0;
-                        }
-                        return;
-                    }
-
-                    //計算にゆらぎがあるので小数点第1位で丸める
-                    BigDecimal bi = new BigDecimal(mLapTime);
-                    float outputValue = bi.setScale(1, BigDecimal.ROUND_HALF_UP).floatValue();
-
-                    //現在のLapTime
-                    mViewSeconds.setText(Float.toString(outputValue));
-
-                    // secondsで設定した時間がすぎたら音を鳴らす
-                    if (isTimeUp(mLapTime)) {
-                        mMinutes++;
-                        mTimeUp = true;
-
-                        mViewMinutes.setText(String.valueOf(mMinutes));
-
-                        // 再生
-                        mRingtone.play();
-                    }
-                }
-            });
-        }
-
-        private boolean isInterval(float time) {
-            boolean result = false;
-
-            int seconds = mSeconds;
-            int interval = mIntervalTime;
-            if (time > 0) {
-                if (time % seconds == interval) {
-                    result = true;
-                }
-            }
-
-            return result;
-        }
-
-        private boolean isTimeUp(float time) {
-            boolean result = false;
-
-            int seconds = mSeconds;
-            if (time > 0) {
-                if (time % seconds == 0) {
-                    result = true;
-                }
-            }
-
-            return result;
-        }
-
-        private boolean isRingtone(float time) {
-            boolean result = false;
-
-            int interval = mSeconds;
-            if (time > 0) {
-                if (time % interval == 5) {
-                    result = true;
-                }
-            }
-
-            return result;
-        }
-    }
-
-    MyTimerTask timerTask = null;       // onClickメソッドでインスタンス生成
-    Timer mTimer = null;                //onClickメソッドでインスタンス生成
-    Handler mHandler = new Handler();   //UI Threadへのpost用ハンドラ
-    float mLapTime = 0.0f;
-    int mMinutes = 0;
-    int mIntervalTime = 0;
-    int mSeconds = 0;
-    boolean mTimeUp = false;
-
-    Ringtone mRingtone = null;
+    private Disposable disposable;
 
     @BindView(R.id.view_seconds)
     TextView mViewSeconds;
@@ -133,9 +43,14 @@ public class MainActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
         ButterKnife.bind(this);
+    }
 
-        Uri uri = RingtoneManager.getDefaultUri(RingtoneManager.TYPE_RINGTONE);
-        mRingtone = RingtoneManager.getRingtone(this, uri);
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+        if (disposable != null && !disposable.isDisposed()) {
+            disposable.dispose();
+        }
     }
 
     @OnClick(R.id.btnStart)
@@ -143,20 +58,31 @@ public class MainActivity extends AppCompatActivity {
         // Keep screen on
         getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
 
+
+
+        disposable = Flowable.interval(1000L, TimeUnit.MILLISECONDS)
+                // スレッド(thread)
+                .observeOn(AndroidSchedulers.mainThread())
+                // 購読(subscribe)
+                .subscribe(aLong -> {
+
+                });
+
+
+
         if (mTimer == null) {
             //タイマーの初期化処理
-            timerTask = new MyTimerTask();
-            mLapTime = 0.0f;
+            timerTask = new MyTimerTask(this);
             mTimer = new Timer(true);
             mTimer.schedule(timerTask, 100, 1000);
         }
 
         if (!mEditInterval.getText().toString().isEmpty()) {
-            mIntervalTime = Integer.parseInt(mEditInterval.getText().toString());
+            timerTask.setIntervalTime(Integer.parseInt(mEditInterval.getText().toString()));
         }
 
         if (!mEditSeconds.getText().toString().isEmpty()) {
-            mSeconds = Integer.parseInt(mEditSeconds.getText().toString());
+            timerTask.setSeconds(Integer.parseInt(mEditSeconds.getText().toString()));
         }
 
         Toast.makeText(this, "startが押されました",
@@ -168,17 +94,27 @@ public class MainActivity extends AppCompatActivity {
         // Keep screen off
         getWindow().clearFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
 
+
+
+        if (disposable != null && !disposable.isDisposed()) {
+            disposable.dispose();
+        }
+
+
+
         if (mTimer != null) {
             mTimer.cancel();
             mTimer = null;
         }
 
-        //現在のLapTime
-        mViewSeconds.setText("0");
-        mViewMinutes.setText("0");
-        mMinutes = 0;
+        timerTask.stop();
 
         Toast.makeText(this, "stopが押されました",
                 Toast.LENGTH_LONG).show();
+    }
+
+    private void updateTimeView(float data) {
+        //現在のLapTime
+        mViewSeconds.setText(String.format(Locale.US, "%f", data));
     }
 }
