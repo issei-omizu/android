@@ -1,0 +1,74 @@
+apply plugin: 'com.android.application'
+//apply plugin: 'com.neenbedankt.android-apt'
+apply plugin: 'kotlin-android'
+apply plugin: 'kotlin-kapt'
+apply plugin: 'me.tatarka.retrolambda'
+
+//group 'com.example.kotlin.kapt'
+
+android {
+    def globalConfiguration = rootProject.extensions.getByName("ext")
+
+    compileSdkVersion globalConfiguration.getAt("androidCompileSdkVersion")
+    buildToolsVersion globalConfiguration.getAt("androidBuildToolsVersion")
+
+    defaultConfig {
+        minSdkVersion globalConfiguration.getAt("androidMinSdkVersion")
+        targetSdkVersion globalConfiguration.getAt("androidTargetSdkVersion")
+
+        applicationId globalConfiguration.getAt("androidApplicationId")
+        versionCode globalConfiguration.getAt("androidVersionCode")
+        versionName globalConfiguration.getAt("androidVersionName")
+        testInstrumentationRunner globalConfiguration.getAt("testInstrumentationRunner")
+//        testApplicationId globalConfiguration.getAt("testApplicationId")
+
+        sourceSets {
+            main.java.srcDirs += 'src/main/kotlin'
+        }
+
+        dataBinding {
+            enabled = true
+        }
+    }
+
+    compileOptions {
+        sourceCompatibility JavaVersion.VERSION_1_8
+        targetCompatibility JavaVersion.VERSION_1_8
+    }
+}
+
+dependencies {
+    def presentationDependencies = rootProject.ext.presentationDependencies
+
+    compile project(':domain')
+
+    // android
+    compile presentationDependencies.androidSupportDesign
+
+
+    // other
+    compile 'org.jetbrains.kotlin:kotlin-stdlib:1.1.0'
+//    kapt 'com.android.databinding:compiler:2.3.0'
+
+
+    compile presentationDependencies.dagger
+//    apt presentationDependencies.daggerCompiler
+    kapt presentationDependencies.daggerCompiler
+//    provided 'org.glassfish:javax.annotation:10.0-b28'
+    compile presentationDependencies.butterKnife
+    compile presentationDependencies.butterKnifeCompiler
+    compile presentationDependencies.rxJava
+    compile presentationDependencies.rxAndroid
+    compile presentationDependencies.rxBinding
+    compile presentationDependencies.rxProperty
+    compile presentationDependencies.rxPropertyKotlin
+    compile presentationDependencies.javaxAnnotation
+
+
+
+
+    compile 'me.tatarka.bindingcollectionadapter:bindingcollectionadapter:1.3.0'
+    compile 'me.tatarka.bindingcollectionadapter:bindingcollectionadapter-recyclerview:1.3.0'
+
+    testCompile 'junit:junit:4.12'
+}
