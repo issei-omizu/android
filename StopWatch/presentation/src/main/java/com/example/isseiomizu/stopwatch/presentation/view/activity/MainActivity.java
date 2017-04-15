@@ -9,6 +9,7 @@ import android.widget.EditText;
 import android.widget.TextView;
 
 import com.example.isseiomizu.stopwatch.databinding.ActivityMainBinding;
+import com.example.isseiomizu.stopwatch.presentation.viewmodel.basics.BasicsViewModel;
 import com.example.isseiomizu.stopwatch.presentation.viewmodel.basics.JavaBasicsViewModel;
 import com.example.isseiomizu.stopwatch.R;
 
